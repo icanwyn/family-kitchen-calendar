@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useFamilyStore } from "@/context/FamilyStore";
-import type { ViewId, CalendarEvent, Chore, FamilyMember } from "@/lib/types";
+import type {
+  ViewId,
+  CalendarEvent,
+  Chore,
+  FamilyMember,
+  WorkoutProgramDay,
+} from "@/lib/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { TodayHub } from "@/components/views/TodayHub";
 import { CalendarView } from "@/components/views/CalendarView";
@@ -15,6 +21,9 @@ import { ChoreModal } from "@/components/modals/ChoreModal";
 import { FitnessModal } from "@/components/modals/FitnessModal";
 import { MemberModal } from "@/components/modals/MemberModal";
 import { ConnectCalendarModal } from "@/components/modals/ConnectCalendarModal";
+import { ProgramBuilderModal } from "@/components/modals/ProgramBuilderModal";
+import { SessionLogModal } from "@/components/modals/SessionLogModal";
+
 const NAV: { id: ViewId; label: string; icon: string }[] = [
   { id: "today", label: "Today", icon: "🏠" },
   { id: "calendar", label: "Calendar", icon: "📅" },
@@ -39,6 +48,12 @@ export function AppShell() {
   const [editingChore, setEditingChore] = useState<Chore | null>(null);
 
   const [fitnessModal, setFitnessModal] = useState(false);
+  const [programBuilderOpen, setProgramBuilderOpen] = useState(false);
+  const [sessionLog, setSessionLog] = useState<{
+    memberId: string;
+    programId: string;
+    day: WorkoutProgramDay;
+  } | null>(null);
 
   const [memberModal, setMemberModal] = useState(false);
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
@@ -275,7 +290,11 @@ export function AppShell() {
             />
           )}
           {view === "fitness" && (
-            <FitnessView onAddLog={() => setFitnessModal(true)} />
+            <FitnessView
+              onAddLog={() => setFitnessModal(true)}
+              onCreateProgram={() => setProgramBuilderOpen(true)}
+              onLogSession={(args) => setSessionLog(args)}
+            />
           )}
           {view === "family" && (
             <FamilyView
@@ -339,6 +358,17 @@ export function AppShell() {
       <FitnessModal
         open={fitnessModal}
         onClose={() => setFitnessModal(false)}
+      />
+      <ProgramBuilderModal
+        open={programBuilderOpen}
+        onClose={() => setProgramBuilderOpen(false)}
+      />
+      <SessionLogModal
+        open={!!sessionLog}
+        onClose={() => setSessionLog(null)}
+        memberId={sessionLog?.memberId ?? ""}
+        programId={sessionLog?.programId ?? ""}
+        day={sessionLog?.day ?? null}
       />
       <MemberModal
         open={memberModal}

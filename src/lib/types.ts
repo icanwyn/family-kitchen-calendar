@@ -70,12 +70,27 @@ export interface Chore {
 export type FitnessActivityType =
   | "run"
   | "walk"
+  | "steps"
+  | "hike"
   | "bike"
   | "swim"
   | "strength"
   | "yoga"
   | "sports"
+  | "hiit"
   | "other";
+
+export interface FitnessSetLog {
+  reps: number;
+  weight?: number;
+  done: boolean;
+}
+
+export interface FitnessExerciseLog {
+  exerciseId: string;
+  name: string;
+  sets: FitnessSetLog[];
+}
 
 export interface FitnessLog {
   id: string;
@@ -84,13 +99,19 @@ export interface FitnessLog {
   title: string;
   durationMinutes: number;
   distanceMiles?: number;
+  steps?: number;
   calories?: number;
   notes?: string;
   date: string; // YYYY-MM-DD
+  /** Freeform activity vs structured program session */
+  source?: "activity" | "program";
   programId?: string;
+  sessionDayId?: string;
+  exerciseLogs?: FitnessExerciseLog[];
   completedAt: string;
 }
 
+/** Lightweight goal-style program (legacy / simple weekly goals) */
 export interface FitnessProgram {
   id: string;
   name: string;
@@ -103,12 +124,79 @@ export interface FitnessProgram {
   active: boolean;
 }
 
+/** Mori-style 4-week personalized training plan */
+export interface WorkoutProgramExercise {
+  exerciseId: string;
+  name: string;
+  pattern: string;
+  sets: number;
+  repMin: number;
+  repMax: number;
+  repsLabel: string;
+  restSec: number;
+  rir: number;
+  cues?: string;
+  compound?: boolean;
+}
+
+export interface WorkoutProgramDay {
+  id: string;
+  date: string;
+  dayName: string;
+  type: "rt" | "cardio" | "rest";
+  title: string;
+  templateKey?: string;
+  exercises: WorkoutProgramExercise[];
+  estimatedMinutes: number;
+  warmup?: string[];
+  cooldown?: string[];
+  notes?: string;
+  deload?: boolean;
+}
+
+export interface WorkoutProgramWeek {
+  week: number;
+  startDate: string;
+  deload: boolean;
+  volumeMultiplier: number;
+  days: WorkoutProgramDay[];
+}
+
+export interface WorkoutProgram {
+  id: string;
+  memberId: string;
+  name?: string;
+  createdAt: string;
+  split: string;
+  primaryGoal: string;
+  primaryGoalLabel: string;
+  weeklySetsTarget: number;
+  rtDaysPerWeek: number;
+  progressionRule: string;
+  progressionNotes: string;
+  profileSnapshot: {
+    age: number;
+    weight?: number | string;
+    height?: number | string;
+    units?: string;
+    goals: string[];
+    equipment: string[];
+    experience: string;
+    daysPerWeek: number;
+    name?: string;
+  };
+  weeks: WorkoutProgramWeek[];
+  active: boolean;
+}
+
 export interface AppState {
   members: FamilyMember[];
   events: CalendarEvent[];
   chores: Chore[];
   fitnessLogs: FitnessLog[];
   fitnessPrograms: FitnessProgram[];
+  /** Mori-style structured training plans */
+  workoutPrograms: WorkoutProgram[];
   activeMemberId: string | null;
   familyName: string;
 }
@@ -157,21 +245,27 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
 export const ACTIVITY_LABELS: Record<FitnessActivityType, string> = {
   run: "Run",
   walk: "Walk",
+  steps: "Steps",
+  hike: "Hike",
   bike: "Bike",
   swim: "Swim",
   strength: "Strength",
   yoga: "Yoga",
   sports: "Sports",
+  hiit: "HIIT",
   other: "Other",
 };
 
 export const ACTIVITY_EMOJIS: Record<FitnessActivityType, string> = {
   run: "🏃",
   walk: "🚶",
+  steps: "👟",
+  hike: "🥾",
   bike: "🚴",
   swim: "🏊",
   strength: "💪",
   yoga: "🧘",
   sports: "⚽",
+  hiit: "⚡",
   other: "🏋️",
 };

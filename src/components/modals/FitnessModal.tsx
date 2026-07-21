@@ -16,7 +16,7 @@ interface FitnessModalProps {
 export function FitnessModal({
   open,
   onClose,
-  defaultActivity = "run",
+  defaultActivity = "walk",
 }: FitnessModalProps) {
   const { members, activeMemberId, addFitnessLog } = useFamilyStore();
 
@@ -26,6 +26,7 @@ export function FitnessModal({
   const [title, setTitle] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [distanceMiles, setDistanceMiles] = useState("");
+  const [steps, setSteps] = useState("");
   const [calories, setCalories] = useState("");
   const [date, setDate] = useState(toDateKey(new Date()));
   const [notes, setNotes] = useState("");
@@ -36,8 +37,9 @@ export function FitnessModal({
     setMemberId(activeMemberId ?? members[0]?.id ?? "");
     setActivityType(defaultActivity);
     setTitle("");
-    setDurationMinutes(30);
+    setDurationMinutes(defaultActivity === "steps" ? 0 : 30);
     setDistanceMiles("");
+    setSteps("");
     setCalories("");
     setDate(toDateKey(new Date()));
     setNotes("");
@@ -53,8 +55,13 @@ export function FitnessModal({
       setError("Choose who did this activity.");
       return;
     }
-    if (!durationMinutes || durationMinutes <= 0) {
+    const isSteps = activityType === "steps";
+    if (!isSteps && (!durationMinutes || durationMinutes <= 0)) {
       setError("Enter minutes greater than 0.");
+      return;
+    }
+    if (isSteps && !steps && durationMinutes <= 0) {
+      setError("Enter steps or minutes.");
       return;
     }
     const label = ACTIVITY_LABELS[activityType];
@@ -62,11 +69,13 @@ export function FitnessModal({
       memberId,
       activityType,
       title: title.trim() || label,
-      durationMinutes,
+      durationMinutes: durationMinutes || 0,
       distanceMiles: distanceMiles ? Number(distanceMiles) : undefined,
+      steps: steps ? Number(steps) : undefined,
       calories: calories ? Number(calories) : undefined,
       date,
       notes: notes.trim() || undefined,
+      source: "activity",
     });
     onClose();
   };
@@ -75,7 +84,7 @@ export function FitnessModal({
     <Modal open={open} onClose={onClose} title="Log activity">
       {members.length === 0 ? (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950">
-          Add a family member on the Family tab before logging workouts.
+          Add a family member on the Family tab before logging.
         </p>
       ) : (
         <>
@@ -93,8 +102,8 @@ export function FitnessModal({
             </select>
           </Field>
 
-          <Field label="Activity type">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Field label="Activity">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {(Object.keys(ACTIVITY_LABELS) as FitnessActivityType[]).map(
                 (k) => (
                   <button
@@ -123,11 +132,11 @@ export function FitnessModal({
             />
           </Field>
 
-          <div className="mb-4 grid grid-cols-3 gap-3">
-            <Field label="Minutes *">
+          <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Field label="Minutes">
               <input
                 type="number"
-                min={1}
+                min={0}
                 className={inputClass}
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(Number(e.target.value))}
@@ -141,6 +150,16 @@ export function FitnessModal({
                 className={inputClass}
                 value={distanceMiles}
                 onChange={(e) => setDistanceMiles(e.target.value)}
+                placeholder="—"
+              />
+            </Field>
+            <Field label="Steps">
+              <input
+                type="number"
+                min={0}
+                className={inputClass}
+                value={steps}
+                onChange={(e) => setSteps(e.target.value)}
                 placeholder="—"
               />
             </Field>

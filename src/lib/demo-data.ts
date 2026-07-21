@@ -9,6 +9,7 @@ export const EMPTY_STATE: AppState = {
   chores: [],
   fitnessLogs: [],
   fitnessPrograms: [],
+  workoutPrograms: [],
 };
 
 /** @deprecated use EMPTY_STATE */

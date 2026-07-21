@@ -17,6 +17,7 @@ import type {
   FamilyMember,
   FitnessLog,
   FitnessProgram,
+  WorkoutProgram,
 } from "@/lib/types";
 import { loadState, resetState, saveState } from "@/lib/storage";
 import { uid } from "@/lib/date-utils";
@@ -41,6 +42,10 @@ interface FamilyStoreValue extends AppState {
   addFitnessProgram: (program: Omit<FitnessProgram, "id">) => void;
   updateFitnessProgram: (id: string, patch: Partial<FitnessProgram>) => void;
   removeFitnessProgram: (id: string) => void;
+  addWorkoutProgram: (program: WorkoutProgram) => void;
+  updateWorkoutProgram: (id: string, patch: Partial<WorkoutProgram>) => void;
+  removeWorkoutProgram: (id: string) => void;
+  setActiveWorkoutProgram: (id: string, memberId: string) => void;
   connectCalendar: (
     memberId: string,
     provider: "google" | "outlook",
@@ -99,6 +104,9 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
           chores: s.chores.filter((c) => c.assigneeId !== id),
           fitnessLogs: s.fitnessLogs.filter((f) => f.memberId !== id),
           fitnessPrograms: s.fitnessPrograms.filter((p) => p.memberId !== id),
+          workoutPrograms: (s.workoutPrograms || []).filter(
+            (p) => p.memberId !== id
+          ),
           activeMemberId:
             s.activeMemberId === id
               ? s.members.find((m) => m.id !== id)?.id ?? null
@@ -191,6 +199,39 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
         update((s) => ({
           ...s,
           fitnessPrograms: s.fitnessPrograms.filter((p) => p.id !== id),
+        })),
+      addWorkoutProgram: (program) =>
+        update((s) => ({
+          ...s,
+          workoutPrograms: [
+            ...s.workoutPrograms.map((p) =>
+              p.memberId === program.memberId && program.active
+                ? { ...p, active: false }
+                : p
+            ),
+            program,
+          ],
+        })),
+      updateWorkoutProgram: (id, patch) =>
+        update((s) => ({
+          ...s,
+          workoutPrograms: s.workoutPrograms.map((p) =>
+            p.id === id ? { ...p, ...patch } : p
+          ),
+        })),
+      removeWorkoutProgram: (id) =>
+        update((s) => ({
+          ...s,
+          workoutPrograms: s.workoutPrograms.filter((p) => p.id !== id),
+        })),
+      setActiveWorkoutProgram: (id, memberId) =>
+        update((s) => ({
+          ...s,
+          workoutPrograms: s.workoutPrograms.map((p) =>
+            p.memberId === memberId
+              ? { ...p, active: p.id === id }
+              : p
+          ),
         })),
       connectCalendar: (memberId, provider, options) => {
         const connection: CalendarConnection = {
