@@ -6,7 +6,11 @@ import { FamilyStoreProvider } from "@/context/FamilyStore";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider
+      // Avoid long hangs if session fetch is slow on cellular / iPad
+      refetchInterval={0}
+      refetchOnWindowFocus={false}
+    >
       <FamilyStoreProvider>{children}</FamilyStoreProvider>
     </SessionProvider>
   );

@@ -1,16 +1,17 @@
 import type { AppState } from "./types";
 import { EMPTY_STATE } from "./demo-data";
+import { deepClone } from "./clone";
 
 const STORAGE_KEY = "family-kitchen-calendar-v3";
 
 export function loadState(): AppState {
-  if (typeof window === "undefined") return structuredClone(EMPTY_STATE);
+  if (typeof window === "undefined") return deepClone(EMPTY_STATE);
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(EMPTY_STATE);
+    if (!raw) return deepClone(EMPTY_STATE);
     const parsed = JSON.parse(raw) as AppState;
     return {
-      ...structuredClone(EMPTY_STATE),
+      ...deepClone(EMPTY_STATE),
       ...parsed,
       members: Array.isArray(parsed.members) ? parsed.members : [],
       events: Array.isArray(parsed.events) ? parsed.events : [],
@@ -24,7 +25,7 @@ export function loadState(): AppState {
         : [],
     };
   } catch {
-    return structuredClone(EMPTY_STATE);
+    return deepClone(EMPTY_STATE);
   }
 }
 
@@ -38,11 +39,12 @@ export function saveState(state: AppState): void {
 }
 
 export function resetState(): AppState {
-  const fresh = structuredClone(EMPTY_STATE);
+  const fresh = deepClone(EMPTY_STATE);
   saveState(fresh);
-  // Also clear old demo key if present
+  // Also clear old demo keys if present
   try {
     localStorage.removeItem("family-kitchen-calendar-v1");
+    localStorage.removeItem("family-kitchen-calendar-v2");
   } catch {
     /* ignore */
   }

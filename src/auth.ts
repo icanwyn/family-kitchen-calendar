@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 
 /**
  * Family calendar gate — single shared login (env credentials).
- * Set AUTH_SECRET, FAMILY_USERNAME, FAMILY_PASSWORD on Vercel / .env.local
+ * Cookie options tuned for Safari / iPad (Secure + SameSite=Lax on HTTPS).
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -47,13 +47,54 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     maxAge: 60 * 60 * 24 * 30, // 30 days
   },
   trustHost: true,
+  // Prefer non-__Host cookies so path/subdomain edge cases on iOS are less fragile
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-authjs.session-token"
+          : "authjs.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+    csrfToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-authjs.csrf-token"
+          : "authjs.csrf-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+    callbackUrl: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-authjs.callback-url"
+          : "authjs.callback-url",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   callbacks: {
     authorized({ auth: session, request }) {
       const path = request.nextUrl.pathname;
       const isPublic =
-        path.startsWith("/login") ||
+        path === "/login" ||
+        path.startsWith("/login/") ||
         path.startsWith("/api/auth") ||
         path.startsWith("/avatars") ||
+        path.startsWith("/fitness") ||
         path === "/favicon.ico";
       if (isPublic) return true;
       return !!session?.user;

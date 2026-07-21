@@ -22,6 +22,7 @@ import type {
 import { loadState, resetState, saveState } from "@/lib/storage";
 import { uid } from "@/lib/date-utils";
 import { parseIcs } from "@/lib/ics";
+import { deepClone } from "@/lib/clone";
 
 interface FamilyStoreValue extends AppState {
   hydrated: boolean;
@@ -60,12 +61,29 @@ interface FamilyStoreValue extends AppState {
 
 const FamilyStoreContext = createContext<FamilyStoreValue | null>(null);
 
+/** SSR-safe empty shell — real data hydrates on client after mount. */
+const EMPTY_SAFE: AppState = {
+  familyName: "My Family",
+  activeMemberId: null,
+  members: [],
+  events: [],
+  chores: [],
+  fitnessLogs: [],
+  fitnessPrograms: [],
+  workoutPrograms: [],
+};
+
 export function FamilyStoreProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AppState>(() => structuredClone(loadState()));
+  const [state, setState] = useState<AppState>(() => deepClone(EMPTY_SAFE));
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setState(loadState());
+    try {
+      setState(loadState());
+    } catch (err) {
+      console.error("Failed to load calendar state", err);
+      setState(deepClone(EMPTY_SAFE));
+    }
     setHydrated(true);
   }, []);
 
@@ -80,6 +98,9 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
   const value = useMemo<FamilyStoreValue>(() => {
     return {
       ...state,
+      workoutPrograms: state.workoutPrograms ?? [],
+      fitnessPrograms: state.fitnessPrograms ?? [],
+      fitnessLogs: state.fitnessLogs ?? [],
       hydrated,
       setActiveMember: (id) => update((s) => ({ ...s, activeMemberId: id })),
       setFamilyName: (name) => update((s) => ({ ...s, familyName: name })),

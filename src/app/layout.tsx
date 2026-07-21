@@ -35,7 +35,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // Allow pinch-zoom on iPad (maximumScale:1 can break Safari accessibility / focus)
+  viewportFit: "cover",
   themeColor: "#0ea5e9",
 };
 
