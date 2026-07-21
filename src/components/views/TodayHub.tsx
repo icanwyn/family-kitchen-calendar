@@ -75,40 +75,33 @@ export function TodayHub({
 
   return (
     <div className="space-y-6">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-800 via-indigo-800 to-violet-900 p-6 text-white shadow-xl shadow-indigo-950/30 sm:p-8">
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute -bottom-16 left-1/3 h-48 w-48 rounded-full bg-cyan-400/15 blur-3xl" />
-        <div className="relative">
-          <p className="text-sm font-bold uppercase tracking-wider text-sky-100">
+      {/* Compact kitchen hub strip */}
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-900 px-4 py-3 text-white shadow-md sm:px-5">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
             Kitchen hub
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="truncate text-base font-bold tracking-tight sm:text-lg">
             {formatDateLong(today)}
           </h1>
-          <p className="mt-2 max-w-xl text-base font-medium text-sky-50">
-            {members.length === 0
-              ? "Add family members to start tracking events, chores, and fitness."
-              : "Everyone's day at a glance — events, chores, and fitness in one place."}
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <QuickStat
-              label="Events"
-              value={String(todaysEvents.length)}
-              onClick={() => onNavigate("calendar")}
-            />
-            <QuickStat
-              label="Chores left"
-              value={String(pendingChores.length)}
-              onClick={() => onNavigate("chores")}
-            />
-            <QuickStat
-              label="Fitness min"
-              value={String(totalMinutes)}
-              onClick={() => onNavigate("fitness")}
-            />
-            <QuickStat label="Done" value={`${choreProgress}%`} />
-          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <QuickStat
+            label="Events"
+            value={String(todaysEvents.length)}
+            onClick={() => onNavigate("calendar")}
+          />
+          <QuickStat
+            label="Chores"
+            value={String(pendingChores.length)}
+            onClick={() => onNavigate("chores")}
+          />
+          <QuickStat
+            label="Fit min"
+            value={String(totalMinutes)}
+            onClick={() => onNavigate("fitness")}
+          />
+          <QuickStat label="Done" value={`${choreProgress}%`} />
         </div>
       </section>
 
@@ -381,10 +374,12 @@ function QuickStat({
     <Comp
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className="min-w-[100px] rounded-2xl bg-black/25 px-4 py-3 text-left ring-1 ring-white/25 transition hover:bg-black/35"
+      className="min-w-[4.25rem] rounded-xl bg-white/10 px-2.5 py-1.5 text-left ring-1 ring-white/20 transition hover:bg-white/20"
     >
-      <div className="text-2xl font-bold tabular-nums text-white">{value}</div>
-      <div className="text-xs font-bold text-sky-50">{label}</div>
+      <div className="text-base font-bold tabular-nums text-white sm:text-lg">
+        {value}
+      </div>
+      <div className="text-[10px] font-bold text-slate-200">{label}</div>
     </Comp>
   );
 }

@@ -119,10 +119,6 @@ export function CalendarView({ onAddEvent, onEditEvent }: CalendarViewProps) {
         </div>
       </div>
 
-      <p className="text-sm font-medium text-slate-700">
-        Tip: click any date on the calendar to add an event for that day.
-      </p>
-
       {/* Member filters */}
       <div className="flex flex-wrap gap-2">
         {members.map((m) => {
@@ -273,9 +269,6 @@ function MonthGrid({
                 >
                   {day.getDate()}
                 </span>
-                <span className="rounded-md bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-800 opacity-0 transition group-hover:opacity-100 sm:opacity-70">
-                  + Add
-                </span>
               </div>
               <div className="space-y-0.5">
                 {dayEvents.map((e) => (
@@ -364,11 +357,8 @@ function WeekGrid({
                   {day.getDate()}
                 </p>
               </div>
-              <span className="rounded-full bg-sky-700 px-2.5 py-1 text-xs font-bold text-white">
-                +
-              </span>
             </button>
-            <ul className="space-y-1.5">
+            <ul className="min-h-[80px] space-y-1.5">
               {dayEvents.map((e) => {
                 const m = getMember(e.memberId);
                 const color = m?.color ?? "#334155";
@@ -392,10 +382,9 @@ function WeekGrid({
                 <button
                   type="button"
                   onClick={() => onAdd(toDateKey(day))}
-                  className="w-full rounded-xl border border-dashed border-slate-300 py-6 text-xs font-semibold text-slate-600 hover:border-sky-400 hover:bg-sky-50 hover:text-sky-800"
-                >
-                  Tap to add
-                </button>
+                  className="w-full min-h-[72px] rounded-xl border border-dashed border-slate-300 transition hover:border-sky-400 hover:bg-sky-50"
+                  aria-label={`Add event on ${day.toLocaleDateString()}`}
+                />
               )}
             </ul>
             {dayEvents.length > 3 && (
@@ -451,10 +440,9 @@ function DayList({
         <button
           type="button"
           onClick={() => onAdd(toDateKey(cursor))}
-          className="w-full rounded-2xl border-2 border-dashed border-slate-300 py-12 text-center font-semibold text-slate-700 transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-900"
-        >
-          No events — click to add one
-        </button>
+          className="w-full min-h-[120px] rounded-2xl border-2 border-dashed border-slate-300 transition hover:border-sky-500 hover:bg-sky-50"
+          aria-label="Add event"
+        />
       ) : (
         <ul className="space-y-3">
           {dayEvents.map((e) => {

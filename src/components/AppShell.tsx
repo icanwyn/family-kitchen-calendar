@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useFamilyStore } from "@/context/FamilyStore";
-import type { ViewId, CalendarEvent, Chore, FamilyMember, FitnessProgram } from "@/lib/types";
+import type { ViewId, CalendarEvent, Chore, FamilyMember } from "@/lib/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { TodayHub } from "@/components/views/TodayHub";
 import { CalendarView } from "@/components/views/CalendarView";
@@ -15,8 +15,6 @@ import { ChoreModal } from "@/components/modals/ChoreModal";
 import { FitnessModal } from "@/components/modals/FitnessModal";
 import { MemberModal } from "@/components/modals/MemberModal";
 import { ConnectCalendarModal } from "@/components/modals/ConnectCalendarModal";
-import { ProgramModal } from "@/components/modals/ProgramModal";
-
 const NAV: { id: ViewId; label: string; icon: string }[] = [
   { id: "today", label: "Today", icon: "🏠" },
   { id: "calendar", label: "Calendar", icon: "📅" },
@@ -41,8 +39,6 @@ export function AppShell() {
   const [editingChore, setEditingChore] = useState<Chore | null>(null);
 
   const [fitnessModal, setFitnessModal] = useState(false);
-  const [programModal, setProgramModal] = useState(false);
-  const [editingProgram, setEditingProgram] = useState<FitnessProgram | null>(null);
 
   const [memberModal, setMemberModal] = useState(false);
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
@@ -279,17 +275,7 @@ export function AppShell() {
             />
           )}
           {view === "fitness" && (
-            <FitnessView
-              onAddLog={() => setFitnessModal(true)}
-              onAddProgram={() => {
-                setEditingProgram(null);
-                setProgramModal(true);
-              }}
-              onEditProgram={(p) => {
-                setEditingProgram(p);
-                setProgramModal(true);
-              }}
-            />
+            <FitnessView onAddLog={() => setFitnessModal(true)} />
           )}
           {view === "family" && (
             <FamilyView
@@ -353,14 +339,6 @@ export function AppShell() {
       <FitnessModal
         open={fitnessModal}
         onClose={() => setFitnessModal(false)}
-      />
-      <ProgramModal
-        open={programModal}
-        onClose={() => {
-          setProgramModal(false);
-          setEditingProgram(null);
-        }}
-        program={editingProgram}
       />
       <MemberModal
         open={memberModal}
