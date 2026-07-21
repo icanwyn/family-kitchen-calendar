@@ -1,0 +1,539 @@
+/* =========================================================
+   Mori-inspired Fitness skin
+   Industrial gym: cement · steel · bold rust · gold
+   Scoped under .mori-fitness
+   ========================================================= */
+
+.mori-fitness {
+  --m-cement-0: #121316;
+  --m-cement-1: #1c1e22;
+  --m-cement-2: #2a2d33;
+  --m-cement-3: #3d424a;
+  --m-steel: #c8d0d8;
+  --m-steel-dim: #8b949e;
+  --m-iron: #0e0f12;
+  --m-rust: #e06a35;
+  --m-rust-deep: #b84a1f;
+  --m-rust-bright: #ff8a4c;
+  --m-rust-glow: rgba(224, 106, 53, 0.45);
+  --m-gold: #e0b84a;
+  --m-gold-deep: #b8922e;
+  --m-gold-glow: rgba(224, 184, 74, 0.35);
+  --m-patina: #5cb87a;
+  --m-patina-deep: #3d8f58;
+  --m-ink: #f4f5f7;
+  --m-ink-soft: rgba(244, 245, 247, 0.82);
+  --m-ink-muted: rgba(244, 245, 247, 0.58);
+  --m-ink-faint: rgba(244, 245, 247, 0.38);
+  --m-danger: #e07068;
+  --m-radius: 14px;
+  --m-radius-lg: 18px;
+  --m-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --m-font-display: var(--font-plus-jakarta), "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+
+  position: relative;
+  isolation: isolate;
+  margin: -0.25rem -0.25rem 0;
+  padding: 1rem 0.75rem 2rem;
+  min-height: calc(100vh - 8rem);
+  color: var(--m-ink);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background-color: var(--m-cement-0);
+  background-image: url("/fitness/gym-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+@media (min-width: 640px) {
+  .mori-fitness {
+    margin: 0;
+    padding: 1.25rem 1rem 2.5rem;
+  }
+}
+
+/* Darken slightly for text contrast while keeping photo visible */
+.mori-fitness::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 400px at 10% 0%, rgba(224, 106, 53, 0.18), transparent 55%),
+    radial-gradient(700px 360px at 100% 10%, rgba(224, 184, 74, 0.12), transparent 50%),
+    linear-gradient(180deg, rgba(12, 13, 16, 0.55) 0%, rgba(12, 13, 16, 0.72) 100%);
+}
+
+.mori-fitness > * {
+  position: relative;
+  z-index: 1;
+}
+
+.mori-fitness .mf-page {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Typography */
+.mori-fitness .mf-display {
+  font-family: var(--m-font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
+}
+
+.mori-fitness .mf-h2 {
+  font-family: var(--m-font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+
+.mori-fitness .mf-h3 {
+  font-family: var(--m-font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: #f5f6f8;
+}
+
+.mori-fitness .mf-caption {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--m-ink-soft);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.mori-fitness .mf-micro {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--m-gold);
+}
+
+/* Metal / cement cards */
+.mori-fitness .mf-card {
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.05) 42%, transparent 58%),
+    linear-gradient(180deg, #25282e 0%, #1a1c20 100%);
+  color: var(--m-ink);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--m-radius-lg);
+  box-shadow: var(--m-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 1.1rem 1.15rem;
+}
+
+.mori-fitness .mf-card .mf-caption,
+.mori-fitness .mf-card .mf-h2,
+.mori-fitness .mf-card .mf-h3 {
+  text-shadow: none;
+}
+
+.mori-fitness .mf-card .mf-muted {
+  color: var(--m-ink-muted);
+}
+
+.mori-fitness .mf-hero {
+  background:
+    linear-gradient(135deg, rgba(224, 106, 53, 0.35) 0%, rgba(26, 28, 32, 0.92) 55%),
+    linear-gradient(180deg, #2a1f1a 0%, #1a1c20 100%);
+  border: 1px solid rgba(224, 106, 53, 0.45);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 40px var(--m-rust-glow);
+}
+
+/* Buttons */
+.mori-fitness .mf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 48px;
+  padding: 0.7rem 1.15rem;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  transition: transform 0.12s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mori-fitness .mf-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.mori-fitness .mf-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mori-fitness .mf-btn-primary {
+  background: linear-gradient(135deg, var(--m-rust-bright) 0%, var(--m-rust) 45%, var(--m-rust-deep) 100%);
+  color: #fff8f4;
+  box-shadow: 0 8px 22px var(--m-rust-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.mori-fitness .mf-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.mori-fitness .mf-btn-gold {
+  background: linear-gradient(135deg, #f0c85a 0%, var(--m-gold) 40%, var(--m-gold-deep) 100%);
+  color: #1a1408;
+  box-shadow: 0 8px 22px var(--m-gold-glow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.mori-fitness .mf-btn-secondary {
+  background: rgba(40, 44, 50, 0.9);
+  color: var(--m-ink);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.mori-fitness .mf-btn-secondary:hover:not(:disabled) {
+  background: rgba(55, 60, 68, 0.95);
+}
+
+.mori-fitness .mf-btn-ghost {
+  background: transparent;
+  color: var(--m-ink-soft);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Tabs */
+.mori-fitness .mf-tabs {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  border-radius: 14px;
+  background: rgba(14, 15, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.mori-fitness .mf-tab {
+  flex: 1;
+  text-align: left;
+  border-radius: 11px;
+  padding: 0.7rem 0.85rem;
+  border: none;
+  background: transparent;
+  color: var(--m-ink-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mori-fitness .mf-tab strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: inherit;
+}
+
+.mori-fitness .mf-tab span {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 0.15rem;
+  opacity: 0.85;
+}
+
+.mori-fitness .mf-tab.is-active {
+  background: linear-gradient(180deg, #3a3f48 0%, #2a2e35 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.mori-fitness .mf-tab.is-active strong {
+  color: var(--m-rust-bright);
+}
+
+/* Chips */
+.mori-fitness .mf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(26, 28, 32, 0.85);
+  color: var(--m-ink-soft);
+  cursor: pointer;
+}
+
+.mori-fitness .mf-chip.is-active {
+  background: linear-gradient(135deg, var(--m-rust) 0%, var(--m-rust-deep) 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px var(--m-rust-glow);
+}
+
+.mori-fitness .mf-chip-gold.is-active {
+  background: linear-gradient(135deg, var(--m-gold) 0%, var(--m-gold-deep) 100%);
+  color: #1a1408;
+  box-shadow: 0 4px 14px var(--m-gold-glow);
+}
+
+/* Stats */
+.mori-fitness .mf-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .mori-fitness .mf-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.mori-fitness .mf-stat {
+  border-radius: 14px;
+  padding: 0.9rem 0.95rem;
+  background: linear-gradient(180deg, #2a2e35 0%, #1c1e22 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.mori-fitness .mf-stat--hot {
+  background: linear-gradient(145deg, #e06a35 0%, #8f4228 100%);
+  border-color: rgba(255, 200, 160, 0.25);
+  box-shadow: 0 8px 24px var(--m-rust-glow);
+}
+
+.mori-fitness .mf-stat--gold {
+  background: linear-gradient(145deg, #e0b84a 0%, #8a6a1e 100%);
+  border-color: rgba(255, 230, 160, 0.3);
+  color: #1a1408;
+}
+
+.mori-fitness .mf-stat label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 0.25rem;
+}
+
+.mori-fitness .mf-stat strong {
+  font-family: var(--m-font-display);
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  tabular-nums: true;
+}
+
+/* Trend bars */
+.mori-fitness .mf-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.3rem;
+  height: 9rem;
+}
+
+.mori-fitness .mf-bar-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  height: 100%;
+}
+
+.mori-fitness .mf-bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.mori-fitness .mf-bar {
+  width: 100%;
+  max-width: 28px;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, var(--m-rust-bright), var(--m-rust-deep));
+  box-shadow: 0 0 12px rgba(224, 106, 53, 0.25);
+  min-height: 2px;
+}
+
+.mori-fitness .mf-bar.is-today {
+  background: linear-gradient(180deg, var(--m-gold), var(--m-gold-deep));
+  box-shadow: 0 0 14px var(--m-gold-glow);
+}
+
+.mori-fitness .mf-bar.is-empty {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  height: 2px !important;
+}
+
+/* Day cards (program week) */
+.mori-fitness .mf-week {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .mori-fitness .mf-week {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+.mori-fitness .mf-day {
+  text-align: left;
+  border-radius: 14px;
+  padding: 0.75rem;
+  background: linear-gradient(180deg, #262a30 0%, #1a1c20 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--m-ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.12s ease;
+}
+
+.mori-fitness .mf-day:hover:not(:disabled) {
+  border-color: var(--m-rust);
+  transform: translateY(-1px);
+}
+
+.mori-fitness .mf-day:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.mori-fitness .mf-day.is-today {
+  border-color: var(--m-gold);
+  box-shadow: 0 0 0 1px var(--m-gold), 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.mori-fitness .mf-day.is-done {
+  background: linear-gradient(180deg, rgba(92, 184, 122, 0.25) 0%, #1a1c20 100%);
+  border-color: rgba(92, 184, 122, 0.45);
+}
+
+.mori-fitness .mf-day.is-rest {
+  opacity: 0.7;
+}
+
+.mori-fitness .mf-day .dow {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--m-gold);
+}
+
+.mori-fitness .mf-progress {
+  height: 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.mori-fitness .mf-progress > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--m-rust-bright), var(--m-gold));
+}
+
+.mori-fitness .mf-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mori-fitness .mf-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mori-fitness .mf-list li:last-child {
+  border-bottom: none;
+}
+
+.mori-fitness .mf-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  background: rgba(224, 106, 53, 0.18);
+  border: 1px solid rgba(224, 106, 53, 0.3);
+  flex-shrink: 0;
+}
+
+.mori-fitness .mf-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.25rem 0;
+}
+
+.mori-fitness .mf-empty {
+  text-align: center;
+  padding: 2.5rem 1.25rem;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: var(--m-radius-lg);
+  background: rgba(14, 15, 18, 0.45);
+}
+
+/* Modal skin when opened over fitness — applied via body class not available;
+   instead style dialog content with .mori-modal wrapper */
+.mori-modal-skin {
+  --m-rust: #e06a35;
+  --m-rust-deep: #b84a1f;
+  --m-rust-bright: #ff8a4c;
+  --m-gold: #e0b84a;
+  --m-ink: #f4f5f7;
+}
+
+.mori-modal-skin.modal-panel,
+.mori-modal-skin {
+  background: linear-gradient(180deg, #2a2d33 0%, #1a1c20 100%) !important;
+  color: #f4f5f7 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.mori-modal-skin h2,
+.mori-modal-skin label span,
+.mori-modal-skin .text-slate-900,
+.mori-modal-skin .text-slate-800,
+.mori-modal-skin .text-slate-700 {
+  color: #f4f5f7 !important;
+}
+
+.mori-modal-skin input,
+.mori-modal-skin select,
+.mori-modal-skin textarea {
+  background: #121316 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #f4f5f7 !important;
+}
+
+.mori-modal-skin .bg-slate-100,
+.mori-modal-skin .bg-slate-200 {
+  background: #2a2d33 !important;
+  color: #f4f5f7 !important;
+}

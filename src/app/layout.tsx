@@ -1,7 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/Providers";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import "./fitness-theme.css";
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta",
+  weight: ["500", "600", "700", "800"],
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +47,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${plusJakarta.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
         <Providers>{children}</Providers>

@@ -8,9 +8,18 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   wide?: boolean;
+  /** Extra class for themed dialogs (e.g. mori-modal-skin) */
+  panelClassName?: string;
 }
 
-export function Modal({ open, onClose, title, children, wide }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  wide,
+  panelClassName = "",
+}: ModalProps) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -36,7 +45,7 @@ export function Modal({ open, onClose, title, children, wide }: ModalProps) {
         aria-labelledby="modal-title"
         className={`relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-3xl border border-slate-300 bg-white p-6 shadow-2xl shadow-slate-900/20 ${
           wide ? "max-w-2xl" : "max-w-lg"
-        }`}
+        } ${panelClassName}`}
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <h2 id="modal-title" className="text-xl font-bold text-slate-900">

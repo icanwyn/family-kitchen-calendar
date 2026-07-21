@@ -116,7 +116,12 @@ export function ProgramBuilderModal({
 
   if (members.length === 0) {
     return (
-      <Modal open={open} onClose={onClose} title="Create training program">
+      <Modal
+        open={open}
+        onClose={onClose}
+        title="Create training program"
+        panelClassName="mori-modal-skin"
+      >
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950">
           Add a family member on the Family tab first.
         </p>
@@ -125,7 +130,13 @@ export function ProgramBuilderModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Create training program" wide>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Create training program"
+      wide
+      panelClassName="mori-modal-skin"
+    >
       <p className="mb-4 text-sm font-medium text-slate-700">
         Mori-style 4-week plan: personalized split, sets, reps, and rest —
         based on goals, experience, and equipment.

@@ -94,7 +94,13 @@ export function SessionLogModal({
   const totalSets = exerciseLogs.reduce((n, e) => n + e.sets.length, 0);
 
   return (
-    <Modal open={open} onClose={onClose} title={day.title} wide>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={day.title}
+      wide
+      panelClassName="mori-modal-skin"
+    >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-slate-700">
         <span>
           {day.dayName} · {day.date} · ~{durationGuess} min

@@ -81,7 +81,12 @@ export function FitnessModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Log activity">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Log activity"
+      panelClassName="mori-modal-skin"
+    >
       {members.length === 0 ? (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950">
           Add a family member on the Family tab before logging.
