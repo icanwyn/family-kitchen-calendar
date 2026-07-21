@@ -395,7 +395,10 @@ export function FitnessView({
                           {ACTIVITY_EMOJIS[log.activityType] || "🏋️"}
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p className="mf-workout-name" style={{ margin: 0 }}>
+                          <p
+                            className="mf-workout-name mf-workout-name--block"
+                            style={{ margin: 0 }}
+                          >
                             {log.title}
                             {log.source === "program" && (
                               <span
@@ -687,7 +690,10 @@ function ProgramPanel({
         .map((day) => (
           <section key={day.id + "-ex"} className="mf-card">
             <p className="mf-micro">Session blueprint</p>
-            <h3 className="mf-workout-name" style={{ marginTop: 6, fontSize: "1.05rem" }}>
+            <h3
+              className="mf-workout-name mf-workout-name--block"
+              style={{ marginTop: 8 }}
+            >
               {day.title}
             </h3>
             <ul className="mf-list">
@@ -697,7 +703,10 @@ function ProgramPanel({
                     {i + 1}
                   </span>
                   <div style={{ flex: 1 }}>
-                    <p className="mf-workout-name" style={{ margin: 0, fontSize: 15 }}>
+                    <p
+                      className="mf-workout-name mf-workout-name--block"
+                      style={{ margin: 0 }}
+                    >
                       {ex.name}
                     </p>
                     {ex.cues && (
