@@ -76,17 +76,17 @@ export function TodayHub({
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600 via-indigo-600 to-violet-700 p-6 text-white shadow-xl shadow-indigo-900/20 sm:p-8">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-800 via-indigo-800 to-violet-900 p-6 text-white shadow-xl shadow-indigo-950/30 sm:p-8">
         <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute -bottom-16 left-1/3 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl" />
+        <div className="absolute -bottom-16 left-1/3 h-48 w-48 rounded-full bg-cyan-400/15 blur-3xl" />
         <div className="relative">
-          <p className="text-sm font-medium uppercase tracking-wider text-sky-100">
+          <p className="text-sm font-bold uppercase tracking-wider text-sky-100">
             Kitchen hub
           </p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
             {formatDateLong(today)}
           </h1>
-          <p className="mt-2 max-w-xl text-sky-100">
+          <p className="mt-2 max-w-xl text-base font-medium text-sky-50">
             {members.length === 0
               ? "Add family members to start tracking events, chores, and fitness."
               : "Everyone's day at a glance — events, chores, and fitness in one place."}
@@ -381,10 +381,10 @@ function QuickStat({
     <Comp
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className="min-w-[100px] rounded-2xl bg-white/15 px-4 py-3 text-left backdrop-blur-sm transition hover:bg-white/25"
+      className="min-w-[100px] rounded-2xl bg-black/25 px-4 py-3 text-left ring-1 ring-white/25 transition hover:bg-black/35"
     >
-      <div className="text-2xl font-bold tabular-nums">{value}</div>
-      <div className="text-xs font-medium text-sky-100">{label}</div>
+      <div className="text-2xl font-bold tabular-nums text-white">{value}</div>
+      <div className="text-xs font-bold text-sky-50">{label}</div>
     </Comp>
   );
 }

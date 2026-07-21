@@ -45,26 +45,26 @@ function LoginForm() {
         <div className="absolute -right-16 bottom-20 h-80 w-80 rounded-full bg-violet-200/40 blur-3xl" />
       </div>
 
-      <div className="relative w-full max-w-md rounded-3xl border border-white/70 bg-white/90 p-8 shadow-2xl shadow-slate-900/10 backdrop-blur-xl">
+      <div className="relative w-full max-w-md rounded-3xl border border-slate-300 bg-white p-8 shadow-2xl shadow-slate-900/15">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-2xl shadow-lg shadow-sky-500/30">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-700 to-indigo-800 text-2xl shadow-lg shadow-sky-800/30">
             🗓️
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Family Kitchen Calendar
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm font-medium text-slate-700">
             Sign in to view your private family hub
           </p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-600">
+            <span className="mb-1.5 block text-sm font-semibold text-slate-800">
               Username
             </span>
             <input
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
+              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
@@ -73,12 +73,12 @@ function LoginForm() {
             />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-600">
+            <span className="mb-1.5 block text-sm font-semibold text-slate-800">
               Password
             </span>
             <input
               type="password"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
+              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
@@ -87,7 +87,7 @@ function LoginForm() {
           </label>
 
           {error && (
-            <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-600">
+            <p className="rounded-xl bg-rose-100 px-3 py-2 text-sm font-bold text-rose-800">
               {error}
             </p>
           )}
@@ -95,13 +95,13 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-sky-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-sky-600/25 transition hover:bg-sky-700 disabled:opacity-60"
+            className="w-full rounded-xl bg-sky-700 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/25 transition hover:bg-sky-800 disabled:opacity-60"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <p className="mt-6 text-center text-xs font-medium text-slate-600">
           Private family calendar — access requires a login.
         </p>
       </div>

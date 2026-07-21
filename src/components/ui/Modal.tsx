@@ -34,18 +34,18 @@ export function Modal({ open, onClose, title, children, wide }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-3xl border border-white/60 bg-white p-6 shadow-2xl shadow-slate-900/15 ${
+        className={`relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-3xl border border-slate-300 bg-white p-6 shadow-2xl shadow-slate-900/20 ${
           wide ? "max-w-2xl" : "max-w-lg"
         }`}
       >
         <div className="mb-5 flex items-start justify-between gap-4">
-          <h2 id="modal-title" className="text-xl font-semibold text-slate-900">
+          <h2 id="modal-title" className="text-xl font-bold text-slate-900">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-800"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-800 transition hover:bg-slate-300"
             aria-label="Close"
           >
             ✕
@@ -66,7 +66,7 @@ export function Field({
 }) {
   return (
     <label className="mb-4 block">
-      <span className="mb-1.5 block text-sm font-medium text-slate-600">
+      <span className="mb-1.5 block text-sm font-semibold text-slate-800">
         {label}
       </span>
       {children}
@@ -75,6 +75,6 @@ export function Field({
 }
 
 export const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100";
+  "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base font-medium text-slate-900 outline-none transition placeholder:text-slate-500 focus:border-sky-600 focus:ring-4 focus:ring-sky-100";
 
 export const selectClass = inputClass;

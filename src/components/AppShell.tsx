@@ -70,26 +70,27 @@ export function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)]">
-      {/* Ambient background */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-sky-200/40 blur-3xl" />
-        <div className="absolute -right-20 top-40 h-80 w-80 rounded-full bg-violet-200/30 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-amber-100/40 blur-3xl" />
+    <div className="min-h-screen bg-[var(--bg)] text-slate-900">
+      {/* Soft ambient wash — kept subtle so text stays readable */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden opacity-50">
+        <div className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-sky-300/30 blur-3xl" />
+        <div className="absolute -right-20 top-40 h-80 w-80 rounded-full bg-violet-300/20 blur-3xl" />
       </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-3 pb-28 pt-3 sm:px-6 sm:pb-8 sm:pt-5 lg:px-8">
         {/* Top bar */}
-        <header className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/70 bg-white/70 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-5">
+        <header className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-300 bg-white px-4 py-3 shadow-md sm:px-5">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-xl shadow-lg shadow-sky-500/30">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-700 text-xl shadow-lg shadow-sky-700/30">
               🗓️
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900 sm:text-base">
+              <p className="truncate text-sm font-bold text-slate-900 sm:text-base">
                 {familyName}
               </p>
-              <p className="text-xs text-slate-500 sm:text-sm">Kitchen Calendar</p>
+              <p className="text-xs font-medium text-slate-600 sm:text-sm">
+                Kitchen Calendar
+              </p>
             </div>
           </div>
 
@@ -100,7 +101,7 @@ export function AppShell() {
                 minute: "2-digit",
               })}
             </p>
-            <p className="text-xs font-medium text-slate-500">
+            <p className="text-xs font-semibold text-slate-600">
               {clock.toLocaleDateString([], {
                 weekday: "short",
                 month: "short",
@@ -139,11 +140,11 @@ export function AppShell() {
                   setEditingMember(active);
                   setMemberModal(true);
                 }}
-                className="flex items-center gap-2 rounded-2xl bg-slate-100/80 px-3 py-1.5 transition hover:bg-slate-200/80"
+                className="flex items-center gap-2 rounded-2xl bg-slate-100 px-3 py-1.5 ring-1 ring-slate-300 transition hover:bg-slate-200"
                 title={`Edit ${active.name}`}
               >
                 <Avatar member={active} size="sm" />
-                <span className="hidden text-sm font-semibold text-slate-700 sm:inline">
+                <span className="hidden text-sm font-bold text-slate-900 sm:inline">
                   {active.name}
                 </span>
               </button>
@@ -156,7 +157,7 @@ export function AppShell() {
                   setMemberModal(true);
                   setView("family");
                 }}
-                className="rounded-xl bg-sky-600 px-3 py-2 text-xs font-semibold text-white sm:text-sm"
+                className="rounded-xl bg-sky-700 px-3 py-2 text-xs font-bold text-white sm:text-sm"
               >
                 + Add member
               </button>
@@ -164,7 +165,7 @@ export function AppShell() {
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-200 sm:text-sm"
+              className="rounded-xl bg-slate-200 px-3 py-2 text-xs font-bold text-slate-800 transition hover:bg-slate-300 sm:text-sm"
               title="Sign out"
             >
               Sign out
@@ -179,10 +180,10 @@ export function AppShell() {
               key={item.id}
               type="button"
               onClick={() => setView(item.id)}
-              className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
+              className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition ${
                 view === item.id
-                  ? "bg-slate-900 text-white shadow-lg shadow-slate-900/15"
-                  : "bg-white/70 text-slate-600 ring-1 ring-white/80 hover:bg-white hover:text-slate-900"
+                  ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20"
+                  : "bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50 hover:text-slate-950"
               }`}
             >
               <span>{item.icon}</span>
@@ -311,17 +312,17 @@ export function AppShell() {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/60 bg-white/90 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-300 bg-white px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.12)] sm:hidden">
         <div className="mx-auto flex max-w-lg items-stretch justify-around">
           {NAV.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setView(item.id)}
-              className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-2 text-[10px] font-semibold transition ${
+              className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-2 text-[10px] font-bold transition ${
                 view === item.id
-                  ? "bg-sky-50 text-sky-700"
-                  : "text-slate-500"
+                  ? "bg-sky-100 text-sky-900"
+                  : "text-slate-700"
               }`}
             >
               <span className="text-lg">{item.icon}</span>

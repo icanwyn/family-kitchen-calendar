@@ -125,28 +125,33 @@ export function MemberModal({ open, onClose, member }: MemberModalProps) {
       </Field>
 
       <Field label="Profile avatar">
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-4">
-          {PROFILE_AVATARS.map((a) => (
-            <button
-              key={a.id}
-              type="button"
-              onClick={() => setAvatarImage(a.src)}
-              className={`relative aspect-square overflow-hidden rounded-2xl transition ${
-                avatarImage === a.src
-                  ? "ring-2 ring-sky-500 ring-offset-2"
-                  : "ring-1 ring-slate-200 hover:ring-sky-300"
-              }`}
-              title={a.label}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={a.src}
-                alt={a.label}
-                className="h-full w-full object-cover"
-              />
-            </button>
-          ))}
+        <div className="max-h-56 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-2">
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+            {PROFILE_AVATARS.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => setAvatarImage(a.src)}
+                className={`relative aspect-square overflow-hidden rounded-2xl transition ${
+                  avatarImage === a.src
+                    ? "ring-2 ring-sky-600 ring-offset-2"
+                    : "ring-1 ring-slate-300 hover:ring-sky-400"
+                }`}
+                title={a.label}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={a.src}
+                  alt={a.label}
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
         </div>
+        <span className="mt-1.5 block text-xs font-medium text-slate-600">
+          {PROFILE_AVATARS.length} styles — scroll for more
+        </span>
       </Field>
 
       <Field label="Calendar color">

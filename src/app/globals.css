@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f0f4f8;
-  --background: #f0f4f8;
-  --foreground: #0f172a;
+  /* Higher-contrast kitchen display palette */
+  --bg: #e8eef5;
+  --background: #e8eef5;
+  --foreground: #0b1220;
   --card: #ffffff;
-  --muted: #64748b;
-  --ring: #0ea5e9;
+  --muted: #334155;
+  --muted-soft: #475569;
+  --border: #cbd5e1;
+  --ring: #0284c7;
 }
 
 @theme inline {
@@ -31,6 +34,8 @@ body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 /* Kitchen tablet friendly touch targets */
@@ -39,15 +44,15 @@ button,
   touch-action: manipulation;
 }
 
+/* Solid cards for readability on tablet / kitchen displays */
 .card {
   border-radius: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
+  background: #ffffff;
   padding: 1.25rem;
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 8px 24px rgba(15, 23, 42, 0.04);
-  backdrop-filter: blur(12px);
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 @media (min-width: 640px) {
@@ -63,15 +68,82 @@ button,
   align-items: center;
   justify-content: center;
   border-radius: 0.75rem;
-  background: #f1f5f9;
+  background: #e2e8f0;
   padding: 0 0.75rem;
-  font-weight: 600;
-  color: #334155;
+  font-weight: 700;
+  color: #0f172a;
   transition: background 0.15s ease;
 }
 
 .nav-btn:hover {
+  background: #cbd5e1;
+}
+
+/* Calendar day cell — full-area click target */
+.cal-day {
+  position: relative;
+  min-height: 100px;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  padding: 0.375rem;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.cal-day:hover {
+  background: #f0f9ff;
+}
+
+.cal-day:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.cal-day--muted {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.cal-day--muted:hover {
   background: #e2e8f0;
+}
+
+.cal-day--today {
+  background: #e0f2fe;
+}
+
+.cal-day--today:hover {
+  background: #bae6fd;
+}
+
+/* Event chips with guaranteed readable text */
+.event-chip {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 0.375rem;
+  padding: 0.2rem 0.4rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+@media (min-width: 640px) {
+  .event-chip {
+    font-size: 0.75rem;
+  }
+
+  .cal-day {
+    min-height: 120px;
+  }
 }
 
 /* Scrollbar polish */
@@ -81,16 +153,16 @@ button,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #94a3b8;
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #64748b;
 }
 
 /* Selection */
 ::selection {
-  background: #bae6fd;
+  background: #7dd3fc;
   color: #0c4a6e;
 }
