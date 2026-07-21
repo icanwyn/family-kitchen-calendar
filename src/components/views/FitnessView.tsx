@@ -395,7 +395,7 @@ export function FitnessView({
                           {ACTIVITY_EMOJIS[log.activityType] || "🏋️"}
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ margin: 0, fontWeight: 800 }}>
+                          <p className="mf-workout-name" style={{ margin: 0 }}>
                             {log.title}
                             {log.source === "program" && (
                               <span
@@ -403,7 +403,7 @@ export function FitnessView({
                                   marginLeft: 8,
                                   fontSize: 10,
                                   fontWeight: 800,
-                                  color: "var(--m-gold)",
+                                  color: "#ffd666",
                                   letterSpacing: "0.06em",
                                   textTransform: "uppercase",
                                 }}
@@ -413,8 +413,8 @@ export function FitnessView({
                             )}
                           </p>
                           <p
-                            className="mf-caption mf-muted"
-                            style={{ margin: "2px 0 0", textShadow: "none" }}
+                            className="mf-workout-meta"
+                            style={{ margin: "2px 0 0", fontSize: 13 }}
                           >
                             {member?.name ?? "—"} · {log.date}
                             {log.durationMinutes
@@ -571,13 +571,13 @@ function ProgramPanel({
         <p className="mf-micro">
           {program.primaryGoalLabel} · {program.split.replace(/_/g, " ")}
         </p>
-        <h2 className="mf-display" style={{ fontSize: "1.45rem", marginTop: 6 }}>
+        <h2 className="mf-workout-name" style={{ fontSize: "1.45rem", marginTop: 6 }}>
           {program.name || program.primaryGoalLabel}
         </h2>
-        <p className="mf-caption" style={{ marginTop: 6 }}>
+        <p className="mf-workout-meta" style={{ marginTop: 6, fontSize: 14 }}>
           {memberName} · {program.rtDaysPerWeek} days/week · double progression
         </p>
-        <p className="mf-caption mf-muted" style={{ marginTop: 10, textShadow: "none" }}>
+        <p className="mf-workout-meta" style={{ marginTop: 10, fontSize: 13 }}>
           {program.progressionNotes}
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
@@ -664,21 +664,14 @@ function ProgramPanel({
               className={`mf-day ${isToday ? "is-today" : ""} ${done ? "is-done" : ""} ${isRest ? "is-rest" : ""}`}
             >
               <div className="dow">{day.dayName}</div>
-              <div style={{ fontWeight: 800, fontSize: 15, marginTop: 2 }}>
+              <div className="mf-workout-name" style={{ fontSize: 15, marginTop: 2 }}>
                 {day.date.slice(8)}
               </div>
-              <div style={{ fontWeight: 700, fontSize: 12, marginTop: 6 }}>
+              <div className="mf-workout-name" style={{ fontSize: 13, marginTop: 6 }}>
                 {day.title}
               </div>
               {!isRest && (
-                <div
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 600,
-                    color: "var(--m-ink-muted)",
-                    marginTop: 4,
-                  }}
-                >
+                <div className="mf-workout-meta" style={{ fontSize: 11, marginTop: 4 }}>
                   {day.exercises.length} moves · ~{day.estimatedMinutes}m
                   {done ? " · ✓" : ""}
                 </div>
@@ -694,7 +687,7 @@ function ProgramPanel({
         .map((day) => (
           <section key={day.id + "-ex"} className="mf-card">
             <p className="mf-micro">Session blueprint</p>
-            <h3 className="mf-h3" style={{ marginTop: 6 }}>
+            <h3 className="mf-workout-name" style={{ marginTop: 6, fontSize: "1.05rem" }}>
               {day.title}
             </h3>
             <ul className="mf-list">
@@ -704,17 +697,19 @@ function ProgramPanel({
                     {i + 1}
                   </span>
                   <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontWeight: 800 }}>{ex.name}</p>
+                    <p className="mf-workout-name" style={{ margin: 0, fontSize: 15 }}>
+                      {ex.name}
+                    </p>
                     {ex.cues && (
                       <p
-                        className="mf-caption mf-muted"
-                        style={{ margin: "2px 0 0", textShadow: "none", fontSize: 12 }}
+                        className="mf-workout-meta"
+                        style={{ margin: "2px 0 0", fontSize: 12 }}
                       >
                         {ex.cues}
                       </p>
                     )}
                   </div>
-                  <span style={{ fontWeight: 800, color: "var(--m-gold)", fontSize: 13 }}>
+                  <span style={{ fontWeight: 800, color: "#ffd666", fontSize: 13 }}>
                     {ex.sets}×{ex.repsLabel}
                   </span>
                 </li>

@@ -21,10 +21,11 @@
   --m-gold-glow: rgba(224, 184, 74, 0.35);
   --m-patina: #5cb87a;
   --m-patina-deep: #3d8f58;
-  --m-ink: #f4f5f7;
-  --m-ink-soft: rgba(244, 245, 247, 0.82);
-  --m-ink-muted: rgba(244, 245, 247, 0.58);
-  --m-ink-faint: rgba(244, 245, 247, 0.38);
+  /* High-contrast text (avoid low-opacity washes on gym photo) */
+  --m-ink: #ffffff;
+  --m-ink-soft: #f0f2f5;
+  --m-ink-muted: #d8dde6;
+  --m-ink-faint: #c4cad4;
   --m-danger: #e07068;
   --m-radius: 14px;
   --m-radius-lg: 18px;
@@ -106,31 +107,45 @@
   font-size: 1.05rem;
   font-weight: 700;
   margin: 0;
-  color: #f5f6f8;
+  color: #ffffff;
 }
 
 .mori-fitness .mf-caption {
   font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--m-ink-soft);
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  color: #eef1f6;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
 }
 
 .mori-fitness .mf-micro {
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--m-gold);
+  color: #ffd666;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.65);
 }
 
-/* Metal / cement cards */
+/* Workout / exercise names — always pure white on solid dark */
+.mori-fitness .mf-workout-name {
+  color: #ffffff !important;
+  font-weight: 800;
+  line-height: 1.3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+.mori-fitness .mf-workout-meta {
+  color: #d5dbe6 !important;
+  font-weight: 600;
+}
+
+/* Metal / cement cards — solid fill so gym bg never bleeds through text */
 .mori-fitness .mf-card {
   background:
-    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.05) 42%, transparent 58%),
-    linear-gradient(180deg, #25282e 0%, #1a1c20 100%);
-  color: var(--m-ink);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.04) 42%, transparent 58%),
+    linear-gradient(180deg, #2c3038 0%, #16181d 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: var(--m-radius-lg);
   box-shadow: var(--m-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   padding: 1.1rem 1.15rem;
@@ -138,12 +153,18 @@
 
 .mori-fitness .mf-card .mf-caption,
 .mori-fitness .mf-card .mf-h2,
-.mori-fitness .mf-card .mf-h3 {
+.mori-fitness .mf-card .mf-h3,
+.mori-fitness .mf-card .mf-workout-name {
   text-shadow: none;
+  color: #ffffff;
+}
+
+.mori-fitness .mf-card .mf-caption {
+  color: #e2e8f0;
 }
 
 .mori-fitness .mf-card .mf-muted {
-  color: var(--m-ink-muted);
+  color: #c8d0dc !important;
 }
 
 .mori-fitness .mf-hero {
@@ -268,21 +289,21 @@
   padding: 0.45rem 0.85rem;
   font-size: 0.8rem;
   font-weight: 800;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(26, 28, 32, 0.85);
-  color: var(--m-ink-soft);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: #1a1d23;
+  color: #ffffff;
   cursor: pointer;
 }
 
 .mori-fitness .mf-chip.is-active {
-  background: linear-gradient(135deg, var(--m-rust) 0%, var(--m-rust-deep) 100%);
-  color: #fff;
+  background: linear-gradient(135deg, var(--m-rust-bright) 0%, var(--m-rust-deep) 100%);
+  color: #ffffff;
   border-color: transparent;
   box-shadow: 0 4px 14px var(--m-rust-glow);
 }
 
 .mori-fitness .mf-chip-gold.is-active {
-  background: linear-gradient(135deg, var(--m-gold) 0%, var(--m-gold-deep) 100%);
+  background: linear-gradient(135deg, #ffe08a 0%, var(--m-gold-deep) 100%);
   color: #1a1408;
   box-shadow: 0 4px 14px var(--m-gold-glow);
 }
@@ -401,35 +422,37 @@
   text-align: left;
   border-radius: 14px;
   padding: 0.75rem;
-  background: linear-gradient(180deg, #262a30 0%, #1a1c20 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--m-ink);
+  background: #16191f;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
   cursor: pointer;
   transition: border-color 0.15s ease, transform 0.12s ease;
 }
 
 .mori-fitness .mf-day:hover:not(:disabled) {
-  border-color: var(--m-rust);
+  border-color: var(--m-rust-bright);
   transform: translateY(-1px);
 }
 
 .mori-fitness .mf-day:disabled {
-  opacity: 0.65;
+  opacity: 0.75;
   cursor: default;
 }
 
 .mori-fitness .mf-day.is-today {
   border-color: var(--m-gold);
-  box-shadow: 0 0 0 1px var(--m-gold), 0 8px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 2px rgba(224, 184, 74, 0.55), 0 8px 20px rgba(0, 0, 0, 0.4);
+  background: #1c1810;
 }
 
 .mori-fitness .mf-day.is-done {
-  background: linear-gradient(180deg, rgba(92, 184, 122, 0.25) 0%, #1a1c20 100%);
-  border-color: rgba(92, 184, 122, 0.45);
+  background: #122018;
+  border-color: rgba(92, 184, 122, 0.65);
 }
 
 .mori-fitness .mf-day.is-rest {
-  opacity: 0.7;
+  opacity: 0.8;
+  background: #12141a;
 }
 
 .mori-fitness .mf-day .dow {
@@ -437,7 +460,13 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--m-gold);
+  color: #ffd666;
+}
+
+.mori-fitness .mf-day .mf-workout-name {
+  color: #ffffff !important;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
 }
 
 .mori-fitness .mf-progress {
@@ -517,11 +546,19 @@
 }
 
 .mori-modal-skin h2,
+.mori-modal-skin h3,
 .mori-modal-skin label span,
 .mori-modal-skin .text-slate-900,
 .mori-modal-skin .text-slate-800,
-.mori-modal-skin .text-slate-700 {
-  color: #f4f5f7 !important;
+.mori-modal-skin .text-slate-700,
+.mori-modal-skin .text-slate-600,
+.mori-modal-skin p {
+  color: #ffffff !important;
+}
+
+.mori-modal-skin .text-zinc-200,
+.mori-modal-skin .text-zinc-300 {
+  color: #e4e4e7 !important;
 }
 
 .mori-modal-skin input,

@@ -146,10 +146,10 @@ export function SessionLogModal({
 
           {current && planned && (
             <div className="rounded-2xl border border-slate-300 bg-white p-4">
-              <h3 className="text-lg font-bold text-slate-900">
+              <h3 className="text-lg font-extrabold text-white">
                 {current.name}
               </h3>
-              <p className="mt-1 text-sm font-medium text-slate-700">
+              <p className="mt-1 text-sm font-semibold text-zinc-200">
                 Target {planned.repsLabel} · {planned.sets} sets ·{" "}
                 {planned.restSec >= 60
                   ? `${Math.round(planned.restSec / 60)} min rest`
@@ -157,7 +157,7 @@ export function SessionLogModal({
                 · RIR {planned.rir}
               </p>
               {planned.cues && (
-                <p className="mt-2 text-sm text-slate-600">{planned.cues}</p>
+                <p className="mt-2 text-sm font-medium text-zinc-300">{planned.cues}</p>
               )}
 
               <div className="mt-4 space-y-2">
