@@ -105,7 +105,7 @@ export function SessionLogModal({
         <span>
           {day.dayName} · {day.date} · ~{durationGuess} min
         </span>
-        <span className="rounded-full bg-violet-100 px-3 py-1 text-violet-900">
+        <span className="rounded-full bg-orange-500/20 px-3 py-1 text-orange-300">
           {doneSets}/{totalSets} sets checked
         </span>
       </div>
@@ -135,8 +135,8 @@ export function SessionLogModal({
                 onClick={() => setExIndex(i)}
                 className={`rounded-full px-3 py-1 text-xs font-bold ${
                   i === exIndex
-                    ? "bg-violet-700 text-white"
-                    : "bg-slate-200 text-slate-800"
+                    ? "bg-orange-600 text-white"
+                    : "bg-zinc-700 text-zinc-100"
                 }`}
               >
                 {i + 1}. {e.name}
