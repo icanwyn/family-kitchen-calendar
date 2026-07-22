@@ -251,15 +251,58 @@ function estimateMinutes(exercises) {
 }
 
 function assignWeekdays(rtCount) {
-  // Prefer Mon-spaced patterns
+  // Prefer Mon-spaced patterns (fallback when user doesn't pick days)
   const maps = {
     2: [1, 4], // Mon Thu
     3: [1, 3, 5], // M W F
     4: [1, 2, 4, 5], // M T Th F
     5: [1, 2, 3, 5, 6],
     6: [1, 2, 3, 4, 5, 6],
+    7: [0, 1, 2, 3, 4, 5, 6],
   };
   return maps[rtCount] || maps[3];
+}
+
+/**
+ * Resolve which JS weekdays (0=Sun … 6=Sat) get resistance training.
+ * @param {object} profile
+ * @param {number} rtDays suggested count from split chooser
+ * @returns {number[]}
+ */
+function resolveTrainingWeekdays(profile, rtDays) {
+  const scheduleRepeat = profile.scheduleRepeat || "weekly";
+  let available = Array.isArray(profile.availableDays)
+    ? profile.availableDays.map(Number).filter((d) => d >= 0 && d <= 6)
+    : [];
+
+  // Daily: train every day of the week (or every available day if narrowed)
+  if (scheduleRepeat === "daily") {
+    if (available.length === 0) {
+      return [0, 1, 2, 3, 4, 5, 6];
+    }
+    return [...new Set(available)].sort((a, b) => a - b);
+  }
+
+  // Weekly / monthly: require explicit available days, else smart default
+  if (available.length === 0) {
+    available = assignWeekdays(Math.min(6, Math.max(2, rtDays)));
+  }
+
+  // Unique, sorted (Mon-first display order optional; keep JS day numbers)
+  return [...new Set(available)].sort((a, b) => a - b);
+}
+
+/**
+ * Whether this calendar day should be RT given week index (0-based) and schedule repeat.
+ * monthly → only week 1 of the 4-week block on available weekdays
+ * weekly / daily → every week on available weekdays
+ */
+function isRtDay(weekIndex0, jsDay, trainingWeekdays, scheduleRepeat) {
+  if (!trainingWeekdays.includes(jsDay)) return false;
+  if (scheduleRepeat === "monthly") {
+    return weekIndex0 === 0; // first week of the block only
+  }
+  return true;
 }
 
 function startOfWeek(date = new Date()) {
@@ -304,20 +347,44 @@ export function generateProgram(profile) {
   const goals = profile.goals?.length ? profile.goals : ["general_fitness"];
   const equipment = profile.equipment?.length ? profile.equipment : ["bodyweight"];
   const experience = profile.experience || "beginner";
-  const daysPerWeek = Number(profile.daysPerWeek) || 3;
+  const scheduleRepeat = profile.scheduleRepeat || "weekly"; // daily | weekly | monthly
   const primaryGoal = priorityGoal(goals);
   const { weightKg, heightCm } = toMetric(profile);
   const bmi = weightKg / ((heightCm / 100) ** 2);
 
-  const { split, days: rtDays } = chooseSplit(daysPerWeek, experience, age, primaryGoal);
+  // Derive training weekdays from user availability + repeat mode
+  const provisionalDays =
+    Array.isArray(profile.availableDays) && profile.availableDays.length > 0
+      ? profile.availableDays.length
+      : Number(profile.daysPerWeek) || 3;
+
+  const daysHint =
+    scheduleRepeat === "daily"
+      ? Math.min(6, Math.max(provisionalDays, 5))
+      : scheduleRepeat === "monthly"
+        ? Math.min(4, Math.max(2, provisionalDays))
+        : Math.min(6, Math.max(2, provisionalDays));
+
+  const { split, days: splitDays } = chooseSplit(
+    daysHint,
+    experience,
+    age,
+    primaryGoal
+  );
+  const trainingWeekdays = resolveTrainingWeekdays(profile, splitDays);
+  const rtDaysPerWeek =
+    scheduleRepeat === "monthly" ? trainingWeekdays.length : trainingWeekdays.length;
+
+  // For monthly, effective weekly RT is lower — still use full template set
   const weeklySets = volumeBudget(experience, primaryGoal, age);
   const templates = sessionTemplates(split);
   const pool = filterExercises(equipment, { age, experience });
-  const weekdays = assignWeekdays(rtDays);
-  const wantCardio = goals.includes("fat_loss") || goals.includes("general_fitness");
+  const wantCardio =
+    goals.includes("fat_loss") || goals.includes("general_fitness");
 
   const weeks = [];
   const anchor = startOfWeek(new Date());
+  let rtSessionCounter = 0; // rotates templates across whole program
 
   for (let w = 0; w < 4; w++) {
     const weekInBlock = w + 1;
@@ -326,15 +393,16 @@ export function generateProgram(profile) {
     const weekStart = addDays(anchor, w * 7);
     const days = [];
 
-    // Build 7 calendar days Mon-Sun (index 0 = Monday)
+    // Build 7 calendar days Mon–Sun (weekStart is Monday)
     for (let i = 0; i < 7; i++) {
       const date = addDays(weekStart, i);
       const jsDay = date.getDay(); // 0 Sun ... 6 Sat
       const dateStr = isoDate(date);
-      const rtIndex = weekdays.indexOf(jsDay);
+      const doRt = isRtDay(w, jsDay, trainingWeekdays, scheduleRepeat);
 
-      if (rtIndex >= 0) {
-        const template = templates[rtIndex % templates.length];
+      if (doRt) {
+        const template = templates[rtSessionCounter % templates.length];
+        rtSessionCounter++;
         const exercises = buildExercisesForSession(
           template,
           pool,
@@ -344,6 +412,12 @@ export function generateProgram(profile) {
           volMul
         );
         const minutes = estimateMinutes(exercises);
+        const repeatNote =
+          scheduleRepeat === "monthly"
+            ? " Monthly schedule: main lifts this week; recover on other weeks."
+            : scheduleRepeat === "daily"
+              ? " Daily schedule: keep sessions focused and leave recovery in the tank."
+              : "";
         days.push({
           id: `w${weekInBlock}-d${dateStr}`,
           date: dateStr,
@@ -358,26 +432,31 @@ export function generateProgram(profile) {
             "Arm circles, hip hinges, bodyweight squats × 8",
             "1–2 light ramp sets on first compound",
           ],
-          cooldown: ["2–3 min easy walk", "Optional gentle stretch 20–30s tight areas"],
+          cooldown: [
+            "2–3 min easy walk",
+            "Optional gentle stretch 20–30s tight areas",
+          ],
           notes:
-            primaryGoal === "strength"
+            (primaryGoal === "strength"
               ? "Rest fully between heavy sets. Leave 2–3 reps in reserve."
               : primaryGoal === "hypertrophy"
                 ? "Move with control. Last few reps should feel hard but clean."
-                : "Keep a steady pace. Consistency beats intensity this week.",
+                : "Keep a steady pace. Consistency beats intensity this week.") +
+            repeatNote,
           deload: isDeload,
         });
-      } else if (wantCardio && (jsDay === 2 || jsDay === 6) && weekdays.indexOf(jsDay) < 0) {
-        // Tue or Sat cardio if free
+      } else if (
+        wantCardio &&
+        (jsDay === 2 || jsDay === 6) &&
+        !trainingWeekdays.includes(jsDay)
+      ) {
         const mins = age >= 60 ? 25 : 30;
         days.push({
           id: `w${weekInBlock}-c${dateStr}`,
           date: dateStr,
           dayName: DAY_NAMES[jsDay],
           type: "cardio",
-          title: age >= 60 || bmi >= 30
-            ? "Zone 2 Walk"
-            : "Zone 2 Cardio",
+          title: age >= 60 || bmi >= 30 ? "Zone 2 Walk" : "Zone 2 Cardio",
           exercises: [
             {
               exerciseId: "brisk_walk",
@@ -400,23 +479,59 @@ export function generateProgram(profile) {
           deload: false,
         });
       } else {
-        days.push({
-          id: `w${weekInBlock}-r${dateStr}`,
-          date: dateStr,
-          dayName: DAY_NAMES[jsDay],
-          type: "rest",
-          title: "Rest",
-          exercises: [],
-          estimatedMinutes: 0,
-          warmup: [],
-          cooldown: [],
-          notes: "Sleep, walk lightly, hydrate. Recovery is training.",
-          deload: false,
-        });
+        // Monthly: available days outside week 1 can be light recovery cardio
+        const isAvailableOffMonth =
+          scheduleRepeat === "monthly" &&
+          trainingWeekdays.includes(jsDay) &&
+          w > 0 &&
+          wantCardio;
+        if (isAvailableOffMonth) {
+          days.push({
+            id: `w${weekInBlock}-c${dateStr}`,
+            date: dateStr,
+            dayName: DAY_NAMES[jsDay],
+            type: "cardio",
+            title: "Easy recovery",
+            exercises: [
+              {
+                exerciseId: "brisk_walk",
+                name: "Easy Walk",
+                pattern: "cardio",
+                sets: 1,
+                repMin: 20,
+                repMax: 20,
+                repsLabel: "20 min",
+                restSec: 0,
+                rir: 4,
+                cues: "Conversational pace — recovery week for monthly plan.",
+                compound: false,
+              },
+            ],
+            estimatedMinutes: 25,
+            warmup: [],
+            cooldown: [],
+            notes:
+              "Monthly strength day falls in week 1. Use this for light movement.",
+            deload: false,
+          });
+        } else {
+          days.push({
+            id: `w${weekInBlock}-r${dateStr}`,
+            date: dateStr,
+            dayName: DAY_NAMES[jsDay],
+            type: "rest",
+            title: "Rest",
+            exercises: [],
+            estimatedMinutes: 0,
+            warmup: [],
+            cooldown: [],
+            notes: "Sleep, walk lightly, hydrate. Recovery is training.",
+            deload: false,
+          });
+        }
       }
     }
 
-    // If want cardio and no cardio day assigned, try to replace a rest day
     if (wantCardio && !days.some((d) => d.type === "cardio")) {
       const restIdx = days.findIndex((d) => d.type === "rest");
       if (restIdx >= 0) {
@@ -455,6 +570,15 @@ export function generateProgram(profile) {
     });
   }
 
+  const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const availableLabel = trainingWeekdays.map((d) => dayLabels[d]).join(", ");
+  const repeatLabel =
+    scheduleRepeat === "daily"
+      ? "daily"
+      : scheduleRepeat === "monthly"
+        ? "monthly"
+        : "weekly";
+
   return {
     id: `prog_${Date.now()}`,
     createdAt: new Date().toISOString(),
@@ -462,10 +586,13 @@ export function generateProgram(profile) {
     primaryGoal,
     primaryGoalLabel: GOALS[primaryGoal]?.label || primaryGoal,
     weeklySetsTarget: weeklySets,
-    rtDaysPerWeek: rtDays,
+    rtDaysPerWeek,
+    scheduleRepeat,
+    availableDays: trainingWeekdays,
     progressionRule: "double_progression",
     progressionNotes:
-      "When you hit the top of the rep range on every set with good form, increase load next time (small jump). Otherwise add 1 rep.",
+      "When you hit the top of the rep range on every set with good form, increase load next time (small jump). Otherwise add 1 rep. " +
+      `Schedule: ${repeatLabel} on ${availableLabel || "selected days"}.`,
     profileSnapshot: {
       age,
       weight: profile.weight,
@@ -473,7 +600,9 @@ export function generateProgram(profile) {
       goals,
       equipment,
       experience,
-      daysPerWeek: rtDays,
+      daysPerWeek: rtDaysPerWeek,
+      availableDays: trainingWeekdays,
+      scheduleRepeat,
       name: profile.name,
     },
     weeks,

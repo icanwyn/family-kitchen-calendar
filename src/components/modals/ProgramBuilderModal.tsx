@@ -21,6 +21,20 @@ interface ProgramBuilderModalProps {
 type GoalId = keyof typeof GOALS;
 type EquipId = keyof typeof EQUIPMENT;
 type ExpId = keyof typeof EXPERIENCE;
+type ScheduleRepeat = "daily" | "weekly" | "monthly";
+
+/** Display order Mon→Sun; values are JS getDay() numbers */
+const WEEKDAY_OPTIONS: { label: string; jsDay: number }[] = [
+  { label: "Mon", jsDay: 1 },
+  { label: "Tue", jsDay: 2 },
+  { label: "Wed", jsDay: 3 },
+  { label: "Thu", jsDay: 4 },
+  { label: "Fri", jsDay: 5 },
+  { label: "Sat", jsDay: 6 },
+  { label: "Sun", jsDay: 0 },
+];
+
+const STEPS = ["Who", "Schedule", "Body", "Goals", "Equipment"] as const;
 
 export function ProgramBuilderModal({
   open,
@@ -37,7 +51,9 @@ export function ProgramBuilderModal({
   const [height, setHeight] = useState("68");
   const [units, setUnits] = useState<"imperial" | "metric">("imperial");
   const [experience, setExperience] = useState<ExpId>("beginner");
-  const [daysPerWeek, setDaysPerWeek] = useState(3);
+  const [availableDays, setAvailableDays] = useState<number[]>([1, 3, 5]); // M W F
+  const [scheduleRepeat, setScheduleRepeat] =
+    useState<ScheduleRepeat>("weekly");
   const [goals, setGoals] = useState<GoalId[]>(["general_fitness"]);
   const [equipment, setEquipment] = useState<EquipId[]>(["bodyweight"]);
   const [error, setError] = useState("");
@@ -54,7 +70,8 @@ export function ProgramBuilderModal({
     setHeight("68");
     setUnits("imperial");
     setExperience("beginner");
-    setDaysPerWeek(3);
+    setAvailableDays([1, 3, 5]);
+    setScheduleRepeat("weekly");
     setGoals(["general_fitness"]);
     setEquipment(["bodyweight"]);
   }, [open, members, activeMemberId]);
@@ -71,6 +88,22 @@ export function ProgramBuilderModal({
     );
   };
 
+  const toggleDay = (jsDay: number) => {
+    setAvailableDays((prev) =>
+      prev.includes(jsDay)
+        ? prev.filter((d) => d !== jsDay)
+        : [...prev, jsDay].sort((a, b) => a - b)
+    );
+  };
+
+  const selectAllDays = () => {
+    setAvailableDays([0, 1, 2, 3, 4, 5, 6]);
+  };
+
+  const selectWeekdays = () => {
+    setAvailableDays([1, 2, 3, 4, 5]);
+  };
+
   const generate = () => {
     if (!memberId) {
       setError("Choose a family member for this program.");
@@ -84,8 +117,19 @@ export function ProgramBuilderModal({
       setError("Pick at least one equipment option.");
       return;
     }
+    if (scheduleRepeat !== "daily" && availableDays.length === 0) {
+      setError("Pick at least one day you can work out.");
+      return;
+    }
     setError("");
     try {
+      const days =
+        scheduleRepeat === "daily" && availableDays.length === 0
+          ? [0, 1, 2, 3, 4, 5, 6]
+          : availableDays.length > 0
+            ? availableDays
+            : [1, 3, 5];
+
       const raw = generateProgram({
         name: name.trim() || members.find((m) => m.id === memberId)?.name,
         age: Number(age) || 30,
@@ -95,7 +139,9 @@ export function ProgramBuilderModal({
         goals,
         equipment,
         experience,
-        daysPerWeek,
+        daysPerWeek: days.length,
+        availableDays: days,
+        scheduleRepeat,
       });
       const program = {
         ...raw,
@@ -103,8 +149,10 @@ export function ProgramBuilderModal({
         memberId,
         name:
           name.trim() ||
-          `${raw.primaryGoalLabel} · ${raw.rtDaysPerWeek} days/week`,
+          `${raw.primaryGoalLabel} · ${scheduleRepeat} · ${days.length}d`,
         active: true,
+        scheduleRepeat,
+        availableDays: days,
       } as WorkoutProgram;
       addWorkoutProgram(program);
       onCreated?.(program);
@@ -116,12 +164,7 @@ export function ProgramBuilderModal({
 
   if (members.length === 0) {
     return (
-      <Modal
-        open={open}
-        onClose={onClose}
-        title="Create training program"
-        panelClassName="mori-modal-skin"
-      >
+      <Modal open={open} onClose={onClose} title="Create training program">
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950">
           Add a family member on the Family tab first.
         </p>
@@ -130,28 +173,21 @@ export function ProgramBuilderModal({
   }
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title="Create training program"
-      wide
-      panelClassName="mori-modal-skin"
-    >
+    <Modal open={open} onClose={onClose} title="Create training program" wide>
       <p className="mb-4 text-sm font-medium text-slate-700">
-        Mori-style 4-week plan: personalized split, sets, reps, and rest —
-        based on goals, experience, and equipment.
+        Build a 4-week plan on the days you can train — daily, weekly, or
+        monthly schedule.
       </p>
 
-      {/* Steps */}
-      <div className="mb-5 flex gap-2">
-        {["Who", "Body", "Goals", "Equipment"].map((label, i) => (
+      <div className="mb-5 flex flex-wrap gap-2">
+        {STEPS.map((label, i) => (
           <button
             key={label}
             type="button"
             onClick={() => setStep(i)}
-            className={`flex-1 rounded-xl py-2 text-xs font-bold transition ${
+            className={`rounded-xl px-3 py-2 text-xs font-bold transition ${
               step === i
-                ? "bg-violet-700 text-white"
+                ? "bg-orange-600 text-white"
                 : "bg-slate-100 text-slate-700 ring-1 ring-slate-300"
             }`}
           >
@@ -196,14 +232,14 @@ export function ProgramBuilderModal({
                   onClick={() => setExperience(id)}
                   className={`rounded-xl px-3 py-3 text-left text-sm transition ${
                     experience === id
-                      ? "bg-violet-700 text-white"
+                      ? "bg-orange-600 text-white"
                       : "bg-slate-100 text-slate-900 ring-1 ring-slate-300"
                   }`}
                 >
                   <span className="font-bold">{EXPERIENCE[id].label}</span>
                   <span
                     className={`mt-0.5 block text-xs ${
-                      experience === id ? "text-violet-100" : "text-slate-600"
+                      experience === id ? "text-orange-100" : "text-slate-600"
                     }`}
                   >
                     {EXPERIENCE[id].desc}
@@ -212,20 +248,95 @@ export function ProgramBuilderModal({
               ))}
             </div>
           </Field>
-          <Field label="Training days per week">
+        </>
+      )}
+
+      {step === 1 && (
+        <>
+          <Field label="Days you can work out">
+            <div className="mb-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={selectWeekdays}
+                className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-800 ring-1 ring-slate-300"
+              >
+                Weekdays
+              </button>
+              <button
+                type="button"
+                onClick={selectAllDays}
+                className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-800 ring-1 ring-slate-300"
+              >
+                Every day
+              </button>
+            </div>
             <div className="flex flex-wrap gap-2">
-              {[2, 3, 4, 5, 6].map((d) => (
+              {WEEKDAY_OPTIONS.map(({ label, jsDay }) => {
+                const on = availableDays.includes(jsDay);
+                return (
+                  <button
+                    key={jsDay}
+                    type="button"
+                    onClick={() => toggleDay(jsDay)}
+                    className={`min-w-[3.25rem] rounded-xl px-3 py-2.5 text-sm font-extrabold transition ${
+                      on
+                        ? "bg-orange-600 text-white ring-2 ring-orange-300"
+                        : "bg-slate-100 text-slate-900 ring-1 ring-slate-300"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-xs font-medium text-slate-600">
+              {availableDays.length === 0
+                ? "Select the days you are free to train."
+                : `${availableDays.length} day${availableDays.length === 1 ? "" : "s"} selected`}
+            </p>
+          </Field>
+
+          <Field label="Schedule repeat">
+            <div className="grid gap-2 sm:grid-cols-3">
+              {(
+                [
+                  {
+                    id: "daily" as const,
+                    title: "Daily",
+                    desc: "Train every selected day, every week (high frequency).",
+                  },
+                  {
+                    id: "weekly" as const,
+                    title: "Weekly",
+                    desc: "Repeat your selected days each week (recommended).",
+                  },
+                  {
+                    id: "monthly" as const,
+                    title: "Monthly",
+                    desc: "Main lifts in week 1 of the block; lighter recovery later.",
+                  },
+                ] as const
+              ).map((opt) => (
                 <button
-                  key={d}
+                  key={opt.id}
                   type="button"
-                  onClick={() => setDaysPerWeek(d)}
-                  className={`h-11 w-11 rounded-xl text-sm font-bold ${
-                    daysPerWeek === d
-                      ? "bg-violet-700 text-white"
+                  onClick={() => setScheduleRepeat(opt.id)}
+                  className={`rounded-xl px-3 py-3 text-left text-sm transition ${
+                    scheduleRepeat === opt.id
+                      ? "bg-orange-600 text-white ring-2 ring-orange-300"
                       : "bg-slate-100 text-slate-900 ring-1 ring-slate-300"
                   }`}
                 >
-                  {d}
+                  <span className="font-extrabold">{opt.title}</span>
+                  <span
+                    className={`mt-1 block text-xs font-medium ${
+                      scheduleRepeat === opt.id
+                        ? "text-orange-50"
+                        : "text-slate-600"
+                    }`}
+                  >
+                    {opt.desc}
+                  </span>
                 </button>
               ))}
             </div>
@@ -233,7 +344,7 @@ export function ProgramBuilderModal({
         </>
       )}
 
-      {step === 1 && (
+      {step === 2 && (
         <>
           <Field label="Units">
             <div className="flex gap-2">
@@ -249,7 +360,7 @@ export function ProgramBuilderModal({
                   onClick={() => setUnits(id)}
                   className={`rounded-xl px-4 py-2 text-sm font-bold ${
                     units === id
-                      ? "bg-violet-700 text-white"
+                      ? "bg-orange-600 text-white"
                       : "bg-slate-100 text-slate-900 ring-1 ring-slate-300"
                   }`}
                 >
@@ -291,7 +402,7 @@ export function ProgramBuilderModal({
         </>
       )}
 
-      {step === 2 && (
+      {step === 3 && (
         <Field label="Goals (pick one or more)">
           <div className="grid gap-2 sm:grid-cols-2">
             {(Object.keys(GOALS) as GoalId[]).map((id) => {
@@ -303,14 +414,14 @@ export function ProgramBuilderModal({
                   onClick={() => toggleGoal(id)}
                   className={`rounded-xl px-3 py-3 text-left text-sm transition ${
                     on
-                      ? "bg-violet-700 text-white ring-2 ring-violet-400"
+                      ? "bg-orange-600 text-white ring-2 ring-orange-300"
                       : "bg-slate-100 text-slate-900 ring-1 ring-slate-300"
                   }`}
                 >
                   <span className="font-bold">{GOALS[id].label}</span>
                   <span
                     className={`mt-0.5 block text-xs ${
-                      on ? "text-violet-100" : "text-slate-600"
+                      on ? "text-orange-50" : "text-slate-600"
                     }`}
                   >
                     {GOALS[id].desc}
@@ -322,7 +433,7 @@ export function ProgramBuilderModal({
         </Field>
       )}
 
-      {step === 3 && (
+      {step === 4 && (
         <Field label="Equipment available">
           <div className="flex flex-wrap gap-2">
             {(Object.keys(EQUIPMENT) as EquipId[]).map((id) => {
@@ -334,7 +445,7 @@ export function ProgramBuilderModal({
                   onClick={() => toggleEquip(id)}
                   className={`rounded-full px-3 py-2 text-sm font-bold transition ${
                     on
-                      ? "bg-violet-700 text-white"
+                      ? "bg-orange-600 text-white"
                       : "bg-slate-100 text-slate-900 ring-1 ring-slate-300"
                   }`}
                 >
@@ -362,11 +473,18 @@ export function ProgramBuilderModal({
             Back
           </button>
         )}
-        {step < 3 ? (
+        {step < STEPS.length - 1 ? (
           <button
             type="button"
-            onClick={() => setStep((s) => s + 1)}
-            className="rounded-xl bg-violet-700 px-5 py-3 text-sm font-bold text-white"
+            onClick={() => {
+              if (step === 1 && scheduleRepeat !== "daily" && availableDays.length === 0) {
+                setError("Pick at least one available day.");
+                return;
+              }
+              setError("");
+              setStep((s) => s + 1);
+            }}
+            className="rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white"
           >
             Continue
           </button>
@@ -374,7 +492,7 @@ export function ProgramBuilderModal({
           <button
             type="button"
             onClick={generate}
-            className="rounded-xl bg-violet-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-violet-700/25"
+            className="rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-orange-600/25"
           >
             Generate 4-week program
           </button>

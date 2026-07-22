@@ -624,8 +624,21 @@ function ProgramPanel({
           {program.name || program.primaryGoalLabel}
         </h2>
         <p className="mf-workout-meta" style={{ marginTop: 6, fontSize: 14 }}>
-          {memberName} · {program.rtDaysPerWeek} days/week · double progression
+          {memberName} · {program.rtDaysPerWeek} day
+          {program.rtDaysPerWeek === 1 ? "" : "s"}/week
+          {program.scheduleRepeat
+            ? ` · ${program.scheduleRepeat}`
+            : ""}{" "}
+          · double progression
         </p>
+        {program.availableDays && program.availableDays.length > 0 && (
+          <p className="mf-workout-meta" style={{ marginTop: 6, fontSize: 13 }}>
+            Available:{" "}
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+              .filter((_, i) => program.availableDays!.includes(i))
+              .join(", ")}
+          </p>
+        )}
         <p className="mf-workout-meta" style={{ marginTop: 10, fontSize: 13 }}>
           {program.progressionNotes}
         </p>

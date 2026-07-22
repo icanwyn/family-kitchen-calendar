@@ -187,6 +187,10 @@ export interface WorkoutProgram {
   rtDaysPerWeek: number;
   progressionRule: string;
   progressionNotes: string;
+  /** daily = every available day; weekly = those days each week; monthly = week 1 only */
+  scheduleRepeat?: "daily" | "weekly" | "monthly";
+  /** JS weekday numbers 0=Sun … 6=Sat the user can train */
+  availableDays?: number[];
   profileSnapshot: {
     age: number;
     weight?: number | string;
@@ -196,6 +200,8 @@ export interface WorkoutProgram {
     equipment: string[];
     experience: string;
     daysPerWeek: number;
+    availableDays?: number[];
+    scheduleRepeat?: "daily" | "weekly" | "monthly";
     name?: string;
   };
   weeks: WorkoutProgramWeek[];
