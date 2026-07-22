@@ -163,10 +163,16 @@ export function ChoreModal({ open, onClose, chore }: ChoreModalProps) {
           onChange={(e) => setFrequency(e.target.value as ChoreFrequency)}
         >
           <option value="once">One-time</option>
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
+          <option value="daily">Daily (resets each day)</option>
+          <option value="weekly">Weekly (resets each week)</option>
+          <option value="monthly">Monthly (resets each month)</option>
         </select>
+        {frequency !== "once" && (
+          <p className="mt-1.5 text-xs font-medium text-slate-600">
+            When marked done, this chore opens again automatically at the start
+            of the next {frequency === "daily" ? "day" : frequency === "weekly" ? "week" : "month"}.
+          </p>
+        )}
       </Field>
 
       <Field label="Notes">

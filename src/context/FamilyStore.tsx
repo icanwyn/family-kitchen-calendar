@@ -24,6 +24,7 @@ import { loadState, resetState, saveState } from "@/lib/storage";
 import { uid } from "@/lib/date-utils";
 import { ICS_FUTURE_DAYS, ICS_PAST_DAYS, parseIcs } from "@/lib/ics";
 import { deepClone } from "@/lib/clone";
+import { applyRecurringChoreResets } from "@/lib/chore-reset";
 
 interface FamilyStoreValue extends AppState {
   hydrated: boolean;
@@ -87,6 +88,35 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
     }
     setHydrated(true);
   }, []);
+
+  // Re-check recurring chore resets when the calendar day changes (and on an interval)
+  useEffect(() => {
+    if (!hydrated) return;
+
+    const roll = () => {
+      setState((prev) => {
+        const { chores, changed } = applyRecurringChoreResets(prev.chores);
+        if (!changed) return prev;
+        return { ...prev, chores };
+      });
+    };
+
+    roll();
+
+    // Poll every 60s so midnight rollover is picked up without a full refresh
+    const interval = window.setInterval(roll, 60_000);
+
+    // Also roll when the tab becomes visible again (e.g. kitchen tablet overnight)
+    const onVisible = () => {
+      if (document.visibilityState === "visible") roll();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [hydrated]);
 
   useEffect(() => {
     if (hydrated) saveState(state);

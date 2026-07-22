@@ -1,6 +1,7 @@
 import type { AppState, Chore } from "./types";
 import { EMPTY_STATE } from "./demo-data";
 import { deepClone } from "./clone";
+import { applyRecurringChoreResets } from "./chore-reset";
 
 const STORAGE_KEY = "family-kitchen-calendar-v3";
 
@@ -38,14 +39,16 @@ export function loadState(): AppState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return deepClone(EMPTY_STATE);
     const parsed = JSON.parse(raw) as AppState;
+    const chores = Array.isArray(parsed.chores)
+      ? parsed.chores.map((c) => normalizeChore(c as Chore))
+      : [];
+    const { chores: rolled } = applyRecurringChoreResets(chores);
     return {
       ...deepClone(EMPTY_STATE),
       ...parsed,
       members: Array.isArray(parsed.members) ? parsed.members : [],
       events: Array.isArray(parsed.events) ? parsed.events : [],
-      chores: Array.isArray(parsed.chores)
-        ? parsed.chores.map((c) => normalizeChore(c as Chore))
-        : [],
+      chores: rolled,
       fitnessLogs: Array.isArray(parsed.fitnessLogs) ? parsed.fitnessLogs : [],
       fitnessPrograms: Array.isArray(parsed.fitnessPrograms)
         ? parsed.fitnessPrograms

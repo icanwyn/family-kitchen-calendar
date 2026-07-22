@@ -216,7 +216,10 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
                       ? assignees.map((m) => m!.name).join(", ")
                       : "Unassigned"}
                     {" · "}
-                    <span className="capitalize">{chore.frequency}</span>
+                    <span className="capitalize">
+                      {chore.frequency}
+                      {chore.frequency !== "once" ? " · auto-reset" : ""}
+                    </span>
                     {" · "}
                     {chore.dueDate ? (
                       <>due {chore.dueDate}</>
