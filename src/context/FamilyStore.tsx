@@ -21,7 +21,7 @@ import type {
 } from "@/lib/types";
 import { loadState, resetState, saveState } from "@/lib/storage";
 import { uid } from "@/lib/date-utils";
-import { parseIcs } from "@/lib/ics";
+import { ICS_FUTURE_DAYS, ICS_PAST_DAYS, parseIcs } from "@/lib/ics";
 import { deepClone } from "@/lib/clone";
 
 interface FamilyStoreValue extends AppState {
@@ -414,31 +414,27 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
             throw new Error(body.error || `Sync failed (${res.status})`);
           }
           const icsText = await res.text();
-          const parsed = parseIcs(icsText);
+          // parseIcs expands RRULEs and applies a wide date window
+          // (default: 1 year past → 2 years future)
+          const parsed = parseIcs(icsText, {
+            pastDays: ICS_PAST_DAYS,
+            futureDays: ICS_FUTURE_DAYS,
+          });
           const provider = connection.provider;
 
-          // Keep events from the last ~90 days into the future ~180 days
-          const now = Date.now();
-          const minT = now - 90 * 24 * 60 * 60 * 1000;
-          const maxT = now + 180 * 24 * 60 * 60 * 1000;
-          const imported: CalendarEvent[] = parsed
-            .filter((e) => {
-              const t = new Date(e.start).getTime();
-              return t >= minT && t <= maxT;
-            })
-            .map((e) => ({
-              id: uid("e"),
-              title: e.title,
-              description: e.description,
-              location: e.location,
-              memberId,
-              start: e.start,
-              end: e.end,
-              allDay: e.allDay,
-              category: "general" as const,
-              source: provider,
-              externalId: e.uid,
-            }));
+          const imported: CalendarEvent[] = parsed.map((e) => ({
+            id: uid("e"),
+            title: e.title,
+            description: e.description,
+            location: e.location,
+            memberId,
+            start: e.start,
+            end: e.end,
+            allDay: e.allDay,
+            category: "general" as const,
+            source: provider,
+            externalId: e.uid,
+          }));
 
           update((s) => ({
             ...s,

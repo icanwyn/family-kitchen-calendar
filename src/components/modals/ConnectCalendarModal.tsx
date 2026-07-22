@@ -278,7 +278,7 @@ export function ConnectCalendarModal({
             {importedCount > 0
               ? `Imported ${importedCount} event${importedCount === 1 ? "" : "s"} for ${member.name}. Use Sync anytime to refresh.`
               : icsUrl.trim()
-                ? `Connected, but no events were found in the feed window (±90 days past / 180 ahead).`
+                ? `Connected, but no events were found in the feed window (1 year past / 2 years ahead, including recurring).`
                 : `Account linked without a calendar feed. Add an ICS link later and hit Sync to import events.`}
           </p>
           <button
