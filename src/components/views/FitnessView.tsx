@@ -368,7 +368,7 @@ export function FitnessView({
             )}
 
             <section className="mf-card">
-              <h2 className="mf-h3">History</h2>
+              <h2 className="mf-h3">Activity log</h2>
               {sortedLogs.length === 0 ? (
                 <div className="mf-empty" style={{ marginTop: 12 }}>
                   <p className="mf-h3">Nothing logged yet</p>
@@ -386,18 +386,48 @@ export function FitnessView({
                   </button>
                 </div>
               ) : (
-                <ul className="mf-list">
+                <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0 }}>
                   {sortedLogs.slice(0, 40).map((log) => {
                     const member = getMember(log.memberId);
                     return (
-                      <li key={log.id}>
-                        <span className="mf-icon">
+                      <li
+                        key={log.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          padding: "12px 14px",
+                          marginBottom: 8,
+                          borderRadius: 12,
+                          background: "#ffffff",
+                          border: "2px solid #111827",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 12,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 22,
+                            background: "#fff7ed",
+                            border: "1px solid #fdba74",
+                            flexShrink: 0,
+                          }}
+                        >
                           {ACTIVITY_EMOJIS[log.activityType] || "🏋️"}
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p
-                            className="mf-workout-name mf-workout-name--block"
-                            style={{ margin: 0 }}
+                            style={{
+                              margin: 0,
+                              fontWeight: 900,
+                              fontSize: 16,
+                              color: "#0a0a0a",
+                              lineHeight: 1.3,
+                            }}
                           >
                             {log.title}
                             {log.source === "program" && (
@@ -406,9 +436,12 @@ export function FitnessView({
                                   marginLeft: 8,
                                   fontSize: 10,
                                   fontWeight: 800,
-                                  color: "#ffd666",
+                                  color: "#9a3412",
                                   letterSpacing: "0.06em",
                                   textTransform: "uppercase",
+                                  background: "#ffedd5",
+                                  padding: "2px 6px",
+                                  borderRadius: 6,
                                 }}
                               >
                                 Program
@@ -416,8 +449,12 @@ export function FitnessView({
                             )}
                           </p>
                           <p
-                            className="mf-workout-meta"
-                            style={{ margin: "2px 0 0", fontSize: 13 }}
+                            style={{
+                              margin: "4px 0 0",
+                              fontSize: 13,
+                              fontWeight: 700,
+                              color: "#1f2937",
+                            }}
                           >
                             {member?.name ?? "—"} · {log.date}
                             {log.durationMinutes
@@ -433,9 +470,18 @@ export function FitnessView({
                         </div>
                         <button
                           type="button"
-                          className="mf-btn mf-btn-ghost"
-                          style={{ minHeight: 36, padding: "0 10px" }}
                           onClick={() => removeFitnessLog(log.id)}
+                          style={{
+                            minHeight: 36,
+                            padding: "0 12px",
+                            borderRadius: 10,
+                            border: "1px solid #d1d5db",
+                            background: "#f3f4f6",
+                            color: "#111827",
+                            fontWeight: 800,
+                            fontSize: 12,
+                            cursor: "pointer",
+                          }}
                         >
                           Remove
                         </button>

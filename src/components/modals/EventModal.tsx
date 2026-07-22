@@ -19,7 +19,7 @@ export function EventModal({ open, onClose, event, defaultDate }: EventModalProp
     useFamilyStore();
 
   const [title, setTitle] = useState("");
-  const [memberId, setMemberId] = useState("");
+  const [memberIds, setMemberIds] = useState<string[]>([]);
   const [date, setDate] = useState(toDateKey(new Date()));
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
@@ -34,7 +34,7 @@ export function EventModal({ open, onClose, event, defaultDate }: EventModalProp
       const start = new Date(event.start);
       const end = new Date(event.end);
       setTitle(event.title);
-      setMemberId(event.memberId);
+      setMemberIds([event.memberId]);
       setDate(toDateKey(start));
       setStartTime(
         `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`
@@ -48,7 +48,9 @@ export function EventModal({ open, onClose, event, defaultDate }: EventModalProp
       setDescription(event.description ?? "");
     } else {
       setTitle("");
-      setMemberId(activeMemberId ?? members[0]?.id ?? "");
+      setMemberIds(
+        activeMemberId ? [activeMemberId] : members[0] ? [members[0].id] : []
+      );
       setDate(defaultDate ?? toDateKey(new Date()));
       setStartTime("09:00");
       setEndTime("10:00");
@@ -59,8 +61,14 @@ export function EventModal({ open, onClose, event, defaultDate }: EventModalProp
     }
   }, [open, event, activeMemberId, members, defaultDate]);
 
+  const toggleMember = (id: string) => {
+    setMemberIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
   const handleSave = () => {
-    if (!title.trim() || !memberId) return;
+    if (!title.trim() || memberIds.length === 0) return;
     const start = allDay
       ? combineDateAndTime(date, "00:00")
       : combineDateAndTime(date, startTime);
@@ -68,9 +76,8 @@ export function EventModal({ open, onClose, event, defaultDate }: EventModalProp
       ? combineDateAndTime(date, "23:59")
       : combineDateAndTime(date, endTime);
 
-    const payload = {
+    const base = {
       title: title.trim(),
-      memberId,
       start,
       end,
       allDay,
@@ -80,8 +87,15 @@ export function EventModal({ open, onClose, event, defaultDate }: EventModalProp
       source: "local" as const,
     };
 
-    if (event) updateEvent(event.id, payload);
-    else addEvent(payload);
+    if (event) {
+      // Keep one event; primary member is first selected
+      updateEvent(event.id, { ...base, memberId: memberIds[0] });
+    } else {
+      // Create an event for each selected member (shared family activities)
+      for (const memberId of memberIds) {
+        addEvent({ ...base, memberId });
+      }
+    }
     onClose();
   };
 
@@ -96,18 +110,43 @@ export function EventModal({ open, onClose, event, defaultDate }: EventModalProp
           autoFocus
         />
       </Field>
-      <Field label="Who">
-        <select
-          className={selectClass}
-          value={memberId}
-          onChange={(e) => setMemberId(e.target.value)}
-        >
-          {members.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.avatarEmoji} {m.name}
-            </option>
-          ))}
-        </select>
+      <Field label="Who (select one or more)">
+        <div className="flex flex-wrap gap-2">
+          {members.map((m) => {
+            const on = memberIds.includes(m.id);
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => toggleMember(m.id)}
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold transition ${
+                  on
+                    ? "bg-sky-600 text-white ring-2 ring-sky-300"
+                    : "bg-slate-100 text-slate-900 ring-1 ring-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                <span
+                  className={`flex h-5 w-5 items-center justify-center rounded-md text-xs ${
+                    on ? "bg-white/20" : "bg-white ring-1 ring-slate-300"
+                  }`}
+                >
+                  {on ? "✓" : ""}
+                </span>
+                {m.name}
+              </button>
+            );
+          })}
+        </div>
+        {memberIds.length === 0 && (
+          <p className="mt-1.5 text-xs font-semibold text-rose-600">
+            Select at least one family member
+          </p>
+        )}
+        {!event && memberIds.length > 1 && (
+          <p className="mt-1.5 text-xs font-medium text-slate-600">
+            Creates a separate calendar entry for each selected person
+          </p>
+        )}
       </Field>
       <Field label="Date">
         <input

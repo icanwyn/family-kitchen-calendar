@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useFamilyStore } from "@/context/FamilyStore";
 import { Avatar } from "@/components/ui/Avatar";
 import type { Chore } from "@/lib/types";
+import { choreAssigneeIds } from "@/lib/types";
 import { toDateKey } from "@/lib/date-utils";
 
 interface ChoresViewProps {
@@ -11,7 +12,7 @@ interface ChoresViewProps {
   onEditChore: (chore: Chore) => void;
 }
 
-type Filter = "all" | "today" | "pending" | "done";
+type Filter = "all" | "today" | "pending" | "done" | "undated";
 
 export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
   const {
@@ -29,15 +30,26 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
   const filtered = useMemo(() => {
     return chores
       .filter((c) => {
-        if (memberFilter !== "all" && c.assigneeId !== memberFilter) return false;
-        if (filter === "today") return c.dueDate <= todayKey || c.completed;
+        const ids = choreAssigneeIds(c);
+        if (memberFilter !== "all" && !ids.includes(memberFilter)) return false;
+        if (filter === "today") {
+          // Due today/overdue, plus open undated tasks so they stay visible
+          if (c.completed) return !!c.dueDate && c.dueDate <= todayKey;
+          if (!c.dueDate) return true;
+          return c.dueDate <= todayKey;
+        }
+        if (filter === "undated") return !c.dueDate && !c.completed;
         if (filter === "pending") return !c.completed;
         if (filter === "done") return c.completed;
         return true;
       })
       .sort((a, b) => {
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
-        return a.dueDate.localeCompare(b.dueDate);
+        // Undated open tasks after dated ones
+        if (!a.dueDate && b.dueDate) return 1;
+        if (a.dueDate && !b.dueDate) return -1;
+        if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+        return a.title.localeCompare(b.title);
       });
   }, [chores, filter, memberFilter, todayKey]);
 
@@ -45,22 +57,30 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
     const map = new Map<string, number>();
     for (const c of chores) {
       if (!c.completed) continue;
-      const id = c.completedById ?? c.assigneeId;
-      map.set(id, (map.get(id) ?? 0) + c.points);
+      const ids = c.completedById
+        ? [c.completedById]
+        : choreAssigneeIds(c);
+      // Split points across assignees if multi
+      const share = c.points / Math.max(1, ids.length);
+      for (const id of ids) {
+        map.set(id, (map.get(id) ?? 0) + share);
+      }
     }
     return map;
   }, [chores]);
 
   const pendingCount = chores.filter((c) => !c.completed).length;
   const doneCount = chores.filter((c) => c.completed).length;
+  const undatedCount = chores.filter((c) => !c.dueDate && !c.completed).length;
 
   return (
     <div className="space-y-6">
       <div className="card flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Chores & tasks</h2>
-          <p className="mt-1 text-slate-500">
+          <p className="mt-1 text-slate-600">
             {pendingCount} open · {doneCount} completed
+            {undatedCount > 0 ? ` · ${undatedCount} no due date` : ""}
           </p>
         </div>
         <button
@@ -68,16 +88,15 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
           onClick={onAddChore}
           className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
         >
-          + Add chore
+          + Add chore / task
         </button>
       </div>
 
-      {/* Leaderboard */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {members.map((m) => {
-          const pts = pointsByMember.get(m.id) ?? 0;
+          const pts = Math.round(pointsByMember.get(m.id) ?? 0);
           const open = chores.filter(
-            (c) => c.assigneeId === m.id && !c.completed
+            (c) => choreAssigneeIds(c).includes(m.id) && !c.completed
           ).length;
           return (
             <button
@@ -95,7 +114,7 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
               <Avatar member={m} size="lg" />
               <div>
                 <p className="font-semibold text-slate-900">{m.name}</p>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-600">
                   <span className="font-semibold text-amber-600">{pts}</span>{" "}
                   pts · {open} open
                 </p>
@@ -109,6 +128,7 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
         {(
           [
             ["today", "Due today"],
+            ["undated", "No due date"],
             ["pending", "Pending"],
             ["done", "Done"],
             ["all", "All"],
@@ -121,7 +141,7 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               filter === id
                 ? "bg-slate-900 text-white"
-                : "bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
+                : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
             }`}
           >
             {label}
@@ -140,14 +160,16 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
 
       <div className="card space-y-2 p-3 sm:p-4">
         {filtered.length === 0 ? (
-          <p className="py-12 text-center text-slate-500">
+          <p className="py-12 text-center text-slate-600">
             No chores match this filter.
           </p>
         ) : (
           filtered.map((chore) => {
-            const member = getMember(chore.assigneeId);
+            const assignees = choreAssigneeIds(chore)
+              .map((id) => getMember(id))
+              .filter(Boolean);
             const overdue =
-              !chore.completed && chore.dueDate < todayKey;
+              !chore.completed && !!chore.dueDate && chore.dueDate < todayKey;
             return (
               <div
                 key={chore.id}
@@ -189,16 +211,20 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
                   >
                     {chore.title}
                   </p>
-                  <p className="mt-0.5 text-sm text-slate-500">
-                    {member && (
-                      <span>
-                        {member.avatarEmoji} {member.name}
-                      </span>
-                    )}
+                  <p className="mt-0.5 text-sm text-slate-600">
+                    {assignees.length > 0
+                      ? assignees.map((m) => m!.name).join(", ")
+                      : "Unassigned"}
                     {" · "}
                     <span className="capitalize">{chore.frequency}</span>
-                    {" · due "}
-                    {chore.dueDate}
+                    {" · "}
+                    {chore.dueDate ? (
+                      <>due {chore.dueDate}</>
+                    ) : (
+                      <span className="font-semibold text-sky-700">
+                        no due date
+                      </span>
+                    )}
                     {overdue && (
                       <span className="ml-1 font-medium text-rose-500">
                         overdue

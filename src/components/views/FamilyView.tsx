@@ -159,7 +159,10 @@ export function FamilyView({
             (e) => e.memberId === member.id
           ).length;
           const choreOpen = chores.filter(
-            (c) => c.assigneeId === member.id && !c.completed
+            (c) =>
+              (c.assigneeIds?.includes(member.id) ||
+                c.assigneeId === member.id) &&
+              !c.completed
           ).length;
           const fitCount = fitnessLogs.filter(
             (f) => f.memberId === member.id

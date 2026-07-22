@@ -52,19 +52,32 @@ export interface CalendarEvent {
   externalId?: string;
 }
 
-export type ChoreFrequency = "once" | "daily" | "weekly";
+export type ChoreFrequency = "once" | "daily" | "weekly" | "monthly";
 
 export interface Chore {
   id: string;
   title: string;
   description?: string;
-  assigneeId: string;
-  dueDate: string; // YYYY-MM-DD
+  /** @deprecated Prefer assigneeIds — kept for older local data */
+  assigneeId?: string;
+  /** One or more family members responsible */
+  assigneeIds: string[];
+  /** YYYY-MM-DD — omit for open tasks with no due date */
+  dueDate?: string;
   frequency: ChoreFrequency;
   points: number;
   completed: boolean;
   completedAt?: string;
   completedById?: string;
+}
+
+/** Normalize legacy chores that only had assigneeId / required dueDate */
+export function choreAssigneeIds(chore: Chore): string[] {
+  if (Array.isArray(chore.assigneeIds) && chore.assigneeIds.length > 0) {
+    return chore.assigneeIds;
+  }
+  if (chore.assigneeId) return [chore.assigneeId];
+  return [];
 }
 
 export type FitnessActivityType =

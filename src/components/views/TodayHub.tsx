@@ -11,6 +11,7 @@ import {
 } from "@/lib/date-utils";
 import { ACTIVITY_EMOJIS } from "@/lib/types";
 import type { CalendarEvent, Chore } from "@/lib/types";
+import { choreAssigneeIds } from "@/lib/types";
 
 interface TodayHubProps {
   onAddEvent: () => void;
@@ -51,7 +52,12 @@ export function TodayHub({
   );
 
   const todaysChores = useMemo(
-    () => chores.filter((c) => c.dueDate <= todayKey),
+    () =>
+      chores.filter((c) => {
+        // Dated chores due today/overdue + open undated tasks
+        if (!c.dueDate) return !c.completed;
+        return c.dueDate <= todayKey;
+      }),
     [chores, todayKey]
   );
 
@@ -234,8 +240,8 @@ export function TodayHub({
               const mEvents = todaysEvents.filter(
                 (e) => e.memberId === member.id
               );
-              const mChores = todaysChores.filter(
-                (c) => c.assigneeId === member.id
+              const mChores = todaysChores.filter((c) =>
+                choreAssigneeIds(c).includes(member.id)
               );
               const mDone = mChores.filter((c) => c.completed).length;
               const mFit = todaysFitness.filter(
@@ -415,8 +421,12 @@ function ChoreRow({
   onToggle: () => void;
 }) {
   const { getMember } = useFamilyStore();
-  const member = getMember(chore.assigneeId);
-  const overdue = chore.dueDate < toDateKey(new Date());
+  const names = choreAssigneeIds(chore)
+    .map((id) => getMember(id)?.name)
+    .filter(Boolean)
+    .join(", ");
+  const overdue =
+    !!chore.dueDate && chore.dueDate < toDateKey(new Date());
 
   return (
     <li className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
@@ -432,8 +442,11 @@ function ChoreRow({
         <p className="truncate text-sm font-medium text-slate-800">
           {chore.title}
         </p>
-        <p className="text-xs text-slate-500">
-          {member?.avatarEmoji} {member?.name}
+        <p className="text-xs text-slate-600">
+          {names || "Unassigned"}
+          {!chore.dueDate && (
+            <span className="ml-1 font-semibold text-sky-700">· no due date</span>
+          )}
           {overdue && (
             <span className="ml-1 font-medium text-rose-500">· overdue</span>
           )}

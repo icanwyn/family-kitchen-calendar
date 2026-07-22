@@ -19,6 +19,7 @@ import type {
   FitnessProgram,
   WorkoutProgram,
 } from "@/lib/types";
+import { choreAssigneeIds } from "@/lib/types";
 import { loadState, resetState, saveState } from "@/lib/storage";
 import { uid } from "@/lib/date-utils";
 import { ICS_FUTURE_DAYS, ICS_PAST_DAYS, parseIcs } from "@/lib/ics";
@@ -122,7 +123,22 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
           ...s,
           members: s.members.filter((m) => m.id !== id),
           events: s.events.filter((e) => e.memberId !== id),
-          chores: s.chores.filter((c) => c.assigneeId !== id),
+          chores: s.chores
+            .map((c) => {
+              const ids = choreAssigneeIds(c).filter((aid) => aid !== id);
+              if (ids.length === 0 && choreAssigneeIds(c).includes(id)) {
+                return null;
+              }
+              if (choreAssigneeIds(c).includes(id)) {
+                return {
+                  ...c,
+                  assigneeIds: ids,
+                  assigneeId: ids[0],
+                };
+              }
+              return c;
+            })
+            .filter(Boolean) as Chore[],
           fitnessLogs: s.fitnessLogs.filter((f) => f.memberId !== id),
           fitnessPrograms: s.fitnessPrograms.filter((p) => p.memberId !== id),
           workoutPrograms: (s.workoutPrograms || []).filter(
@@ -149,10 +165,28 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
           events: s.events.filter((e) => e.id !== id),
         })),
       addChore: (chore) =>
-        update((s) => ({
-          ...s,
-          chores: [...s.chores, { ...chore, id: uid("ch"), completed: false }],
-        })),
+        update((s) => {
+          const ids =
+            chore.assigneeIds?.length > 0
+              ? chore.assigneeIds
+              : chore.assigneeId
+                ? [chore.assigneeId]
+                : [];
+          return {
+            ...s,
+            chores: [
+              ...s.chores,
+              {
+                ...chore,
+                id: uid("ch"),
+                completed: false,
+                assigneeIds: ids,
+                assigneeId: ids[0],
+                dueDate: chore.dueDate || undefined,
+              },
+            ],
+          };
+        }),
       updateChore: (id, patch) =>
         update((s) => ({
           ...s,
@@ -175,7 +209,10 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
               ...c,
               completed: true,
               completedAt: new Date().toISOString(),
-              completedById: completedById ?? s.activeMemberId ?? c.assigneeId,
+              completedById:
+                completedById ??
+                s.activeMemberId ??
+                choreAssigneeIds(c)[0],
             };
           }),
         })),
