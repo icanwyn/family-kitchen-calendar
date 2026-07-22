@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { useFamilyStore } from "@/context/FamilyStore";
-import { Avatar } from "@/components/ui/Avatar";
 import {
   formatDateLong,
   formatTime,
@@ -32,7 +31,6 @@ export function TodayHub({
     events,
     chores,
     fitnessLogs,
-    members,
     getMember,
     toggleChore,
     activeMemberId,
@@ -230,54 +228,6 @@ export function TodayHub({
               )}
             </ul>
           )}
-        </section>
-
-        {/* Family strip */}
-        <section className="card lg:col-span-2">
-          <Header title="Family" />
-          <div className="grid gap-3 sm:grid-cols-2">
-            {members.map((member) => {
-              const mEvents = todaysEvents.filter(
-                (e) => e.memberId === member.id
-              );
-              const mChores = todaysChores.filter((c) =>
-                choreAssigneeIds(c).includes(member.id)
-              );
-              const mDone = mChores.filter((c) => c.completed).length;
-              const mFit = todaysFitness.filter(
-                (f) => f.memberId === member.id
-              );
-              return (
-                <div
-                  key={member.id}
-                  className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-4"
-                >
-                  <Avatar member={member} size="lg" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900">{member.name}</p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {mEvents.length} event{mEvents.length !== 1 ? "s" : ""} ·{" "}
-                      {mDone}/{mChores.length} chores
-                      {mFit.length > 0 &&
-                        ` · ${mFit.reduce((s, f) => s + f.durationMinutes, 0)} min active`}
-                    </p>
-                    {member.calendarConnections.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {member.calendarConnections.map((c) => (
-                          <span
-                            key={c.id}
-                            className="rounded-full bg-white px-2 py-0.5 text-xs capitalize text-slate-500 ring-1 ring-slate-200"
-                          >
-                            {c.provider}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </section>
 
         {/* Fitness today */}
