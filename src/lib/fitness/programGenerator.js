@@ -24,7 +24,7 @@ function priorityGoal(goals = []) {
 }
 
 function chooseSplit(days, experience, age, primaryGoal) {
-  let d = clamp(days, 2, 6);
+  let d = clamp(Number(days) || 3, 2, 6);
   if (experience === "beginner") d = Math.min(d, 4);
   if (age >= 65) d = Math.min(d, 4);
 

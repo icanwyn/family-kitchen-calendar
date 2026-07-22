@@ -259,33 +259,38 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
           fitnessPrograms: s.fitnessPrograms.filter((p) => p.id !== id),
         })),
       addWorkoutProgram: (program) =>
-        update((s) => ({
-          ...s,
-          workoutPrograms: [
-            ...s.workoutPrograms.map((p) =>
-              p.memberId === program.memberId && program.active
-                ? { ...p, active: false }
-                : p
-            ),
-            program,
-          ],
-        })),
+        update((s) => {
+          const existing = Array.isArray(s.workoutPrograms)
+            ? s.workoutPrograms
+            : [];
+          return {
+            ...s,
+            workoutPrograms: [
+              ...existing.map((p) =>
+                p.memberId === program.memberId && program.active
+                  ? { ...p, active: false }
+                  : p
+              ),
+              program,
+            ],
+          };
+        }),
       updateWorkoutProgram: (id, patch) =>
         update((s) => ({
           ...s,
-          workoutPrograms: s.workoutPrograms.map((p) =>
+          workoutPrograms: (s.workoutPrograms ?? []).map((p) =>
             p.id === id ? { ...p, ...patch } : p
           ),
         })),
       removeWorkoutProgram: (id) =>
         update((s) => ({
           ...s,
-          workoutPrograms: s.workoutPrograms.filter((p) => p.id !== id),
+          workoutPrograms: (s.workoutPrograms ?? []).filter((p) => p.id !== id),
         })),
       setActiveWorkoutProgram: (id, memberId) =>
         update((s) => ({
           ...s,
-          workoutPrograms: s.workoutPrograms.map((p) =>
+          workoutPrograms: (s.workoutPrograms ?? []).map((p) =>
             p.memberId === memberId
               ? { ...p, active: p.id === id }
               : p

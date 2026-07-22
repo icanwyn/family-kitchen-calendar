@@ -130,6 +130,18 @@ export function ProgramBuilderModal({
             ? availableDays
             : [1, 3, 5];
 
+      // Always include bodyweight so the exercise pool is never empty
+      const equip =
+        equipment.length > 0
+          ? Array.from(new Set([...equipment, "bodyweight"]))
+          : ["bodyweight"];
+
+      if (typeof generateProgram !== "function") {
+        throw new Error(
+          "Program generator failed to load. Hard-refresh the page and try again."
+        );
+      }
+
       const raw = generateProgram({
         name: name.trim() || members.find((m) => m.id === memberId)?.name,
         age: Number(age) || 30,
@@ -137,28 +149,45 @@ export function ProgramBuilderModal({
         height: Number(height) || (units === "imperial" ? 68 : 170),
         units,
         goals,
-        equipment,
+        equipment: equip,
         experience,
-        daysPerWeek: days.length,
+        daysPerWeek: Math.max(2, days.length),
         availableDays: days,
         scheduleRepeat,
       });
+
+      if (!raw || !Array.isArray(raw.weeks) || raw.weeks.length === 0) {
+        throw new Error("Generator returned an empty plan. Try different days.");
+      }
+
       const program = {
         ...raw,
         id: uid("wp"),
         memberId,
         name:
           name.trim() ||
-          `${raw.primaryGoalLabel} · ${scheduleRepeat} · ${days.length}d`,
+          `${raw.primaryGoalLabel || "Training"} · ${scheduleRepeat} · ${days.length}d`,
         active: true,
         scheduleRepeat,
         availableDays: days,
+        workoutPrograms: undefined, // strip any accidental nested junk
       } as WorkoutProgram;
+
+      // Remove undefined keys that can confuse storage
+      delete (program as { workoutPrograms?: unknown }).workoutPrograms;
+
       addWorkoutProgram(program);
       onCreated?.(program);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not build program");
+      console.error("Program create failed", err);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : "Could not build program";
+      setError(msg || "Could not build program. Try again.");
     }
   };
 

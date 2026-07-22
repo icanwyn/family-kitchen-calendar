@@ -16,10 +16,10 @@ import {
   getWeekIndexForDate,
   todayISO,
 } from "@/lib/fitness/programGenerator.js";
+import { ProgramBuilderModal } from "@/components/modals/ProgramBuilderModal";
 
 interface FitnessViewProps {
   onAddLog: () => void;
-  onCreateProgram: () => void;
   onLogSession: (args: {
     memberId: string;
     programId: string;
@@ -31,7 +31,6 @@ type Tab = "activities" | "programs";
 
 export function FitnessView({
   onAddLog,
-  onCreateProgram,
   onLogSession,
 }: FitnessViewProps) {
   const {
@@ -49,6 +48,9 @@ export function FitnessView({
   const [rangeDays, setRangeDays] = useState<7 | 14 | 30>(7);
   const [viewProgramId, setViewProgramId] = useState<string | null>(null);
   const [weekIdx, setWeekIdx] = useState(0);
+  const [programBuilderOpen, setProgramBuilderOpen] = useState(false);
+
+  const onCreateProgram = () => setProgramBuilderOpen(true);
 
   const today = useMemo(() => new Date(), []);
   const todayKey = todayISO();
@@ -577,6 +579,17 @@ export function FitnessView({
           </>
         )}
       </div>
+
+      <ProgramBuilderModal
+        open={programBuilderOpen}
+        onClose={() => setProgramBuilderOpen(false)}
+        onCreated={(program) => {
+          setTab("programs");
+          setViewProgramId(program.id);
+          setWeekIdx(0);
+          setProgramBuilderOpen(false);
+        }}
+      />
     </div>
   );
 }

@@ -21,7 +21,6 @@ import { ChoreModal } from "@/components/modals/ChoreModal";
 import { FitnessModal } from "@/components/modals/FitnessModal";
 import { MemberModal } from "@/components/modals/MemberModal";
 import { ConnectCalendarModal } from "@/components/modals/ConnectCalendarModal";
-import { ProgramBuilderModal } from "@/components/modals/ProgramBuilderModal";
 import { SessionLogModal } from "@/components/modals/SessionLogModal";
 
 const NAV: { id: ViewId; label: string; icon: string }[] = [
@@ -48,7 +47,6 @@ export function AppShell() {
   const [editingChore, setEditingChore] = useState<Chore | null>(null);
 
   const [fitnessModal, setFitnessModal] = useState(false);
-  const [programBuilderOpen, setProgramBuilderOpen] = useState(false);
   const [sessionLog, setSessionLog] = useState<{
     memberId: string;
     programId: string;
@@ -292,7 +290,6 @@ export function AppShell() {
           {view === "fitness" && (
             <FitnessView
               onAddLog={() => setFitnessModal(true)}
-              onCreateProgram={() => setProgramBuilderOpen(true)}
               onLogSession={(args) => setSessionLog(args)}
             />
           )}
@@ -358,10 +355,6 @@ export function AppShell() {
       <FitnessModal
         open={fitnessModal}
         onClose={() => setFitnessModal(false)}
-      />
-      <ProgramBuilderModal
-        open={programBuilderOpen}
-        onClose={() => setProgramBuilderOpen(false)}
       />
       <SessionLogModal
         open={!!sessionLog}
