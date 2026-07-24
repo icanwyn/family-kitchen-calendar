@@ -2,6 +2,7 @@ import type { AppState, Chore } from "./types";
 import { EMPTY_STATE } from "./demo-data";
 import { deepClone } from "./clone";
 import { applyRecurringChoreResets } from "./chore-reset";
+import { pruneOldPointsLedger } from "./points";
 
 const STORAGE_KEY = "family-kitchen-calendar-v3";
 
@@ -56,6 +57,9 @@ export function loadState(): AppState {
       workoutPrograms: Array.isArray(parsed.workoutPrograms)
         ? parsed.workoutPrograms
         : [],
+      pointsLedger: pruneOldPointsLedger(
+        Array.isArray(parsed.pointsLedger) ? parsed.pointsLedger : []
+      ),
     };
   } catch {
     return deepClone(EMPTY_STATE);

@@ -17,6 +17,7 @@ import type {
   FamilyMember,
   FitnessLog,
   FitnessProgram,
+  PointsEntry,
   WorkoutProgram,
 } from "@/lib/types";
 import { choreAssigneeIds } from "@/lib/types";
@@ -25,6 +26,7 @@ import { uid } from "@/lib/date-utils";
 import { ICS_FUTURE_DAYS, ICS_PAST_DAYS, parseIcs } from "@/lib/ics";
 import { deepClone } from "@/lib/clone";
 import { applyRecurringChoreResets } from "@/lib/chore-reset";
+import { monthKeyFromDate } from "@/lib/points";
 
 interface FamilyStoreValue extends AppState {
   hydrated: boolean;
@@ -59,6 +61,8 @@ interface FamilyStoreValue extends AppState {
   syncCalendar: (memberId: string, connectionId: string) => Promise<number>;
   resetDemo: () => void;
   getMember: (id: string) => FamilyMember | undefined;
+  /** Current rewards month key YYYY-MM */
+  rewardsMonthKey: string;
 }
 
 const FamilyStoreContext = createContext<FamilyStoreValue | null>(null);
@@ -73,6 +77,7 @@ const EMPTY_SAFE: AppState = {
   fitnessLogs: [],
   fitnessPrograms: [],
   workoutPrograms: [],
+  pointsLedger: [],
 };
 
 export function FamilyStoreProvider({ children }: { children: ReactNode }) {
@@ -132,6 +137,8 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
       workoutPrograms: state.workoutPrograms ?? [],
       fitnessPrograms: state.fitnessPrograms ?? [],
       fitnessLogs: state.fitnessLogs ?? [],
+      pointsLedger: state.pointsLedger ?? [],
+      rewardsMonthKey: monthKeyFromDate(),
       hydrated,
       setActiveMember: (id) => update((s) => ({ ...s, activeMemberId: id })),
       setFamilyName: (name) => update((s) => ({ ...s, familyName: name })),
@@ -174,6 +181,8 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
           workoutPrograms: (s.workoutPrograms || []).filter(
             (p) => p.memberId !== id
           ),
+          // Keep points history under a placeholder name if member removed
+          pointsLedger: s.pointsLedger ?? [],
           activeMemberId:
             s.activeMemberId === id
               ? s.members.find((m) => m.id !== id)?.id ?? null
@@ -223,33 +232,77 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
           chores: s.chores.map((c) => (c.id === id ? { ...c, ...patch } : c)),
         })),
       toggleChore: (id, completedById) =>
-        update((s) => ({
-          ...s,
-          chores: s.chores.map((c) => {
-            if (c.id !== id) return c;
-            if (c.completed) {
-              return {
-                ...c,
-                completed: false,
-                completedAt: undefined,
-                completedById: undefined,
-              };
-            }
+        update((s) => {
+          const chore = s.chores.find((c) => c.id === id);
+          if (!chore) return s;
+
+          if (chore.completed) {
+            // Un-complete: reverse points awarded for this completion
+            const ledger = (s.pointsLedger ?? []).filter(
+              (e) =>
+                !(
+                  e.choreId === id &&
+                  chore.completedAt &&
+                  e.earnedAt === chore.completedAt
+                )
+            );
             return {
-              ...c,
-              completed: true,
-              completedAt: new Date().toISOString(),
-              completedById:
-                completedById ??
-                s.activeMemberId ??
-                choreAssigneeIds(c)[0],
+              ...s,
+              pointsLedger: ledger,
+              chores: s.chores.map((c) =>
+                c.id === id
+                  ? {
+                      ...c,
+                      completed: false,
+                      completedAt: undefined,
+                      completedById: undefined,
+                    }
+                  : c
+              ),
             };
-          }),
-        })),
+          }
+
+          const now = new Date();
+          const earnedAt = now.toISOString();
+          const who =
+            completedById ??
+            s.activeMemberId ??
+            choreAssigneeIds(chore)[0];
+          const pts = Math.max(0, chore.points || 0);
+          const ledger = [...(s.pointsLedger ?? [])];
+          if (who && pts > 0) {
+            const entry: PointsEntry = {
+              id: uid("pts"),
+              memberId: who,
+              choreId: chore.id,
+              choreTitle: chore.title,
+              points: pts,
+              earnedAt,
+              monthKey: monthKeyFromDate(now),
+            };
+            ledger.push(entry);
+          }
+
+          return {
+            ...s,
+            pointsLedger: ledger,
+            chores: s.chores.map((c) =>
+              c.id === id
+                ? {
+                    ...c,
+                    completed: true,
+                    completedAt: earnedAt,
+                    completedById: who,
+                  }
+                : c
+            ),
+          };
+        }),
       removeChore: (id) =>
         update((s) => ({
           ...s,
           chores: s.chores.filter((c) => c.id !== id),
+          // Keep past points even if chore is deleted (rewards history)
         })),
       addFitnessLog: (log) =>
         update((s) => ({

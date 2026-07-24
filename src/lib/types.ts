@@ -208,6 +208,18 @@ export interface WorkoutProgram {
   active: boolean;
 }
 
+/** Points earned toward monthly rewards (from completed chores) */
+export interface PointsEntry {
+  id: string;
+  memberId: string;
+  choreId: string;
+  choreTitle: string;
+  points: number;
+  earnedAt: string; // ISO
+  /** Local calendar month bucket YYYY-MM — resets each 1st via new key */
+  monthKey: string;
+}
+
 export interface AppState {
   members: FamilyMember[];
   events: CalendarEvent[];
@@ -216,6 +228,8 @@ export interface AppState {
   fitnessPrograms: FitnessProgram[];
   /** Mori-style structured training plans */
   workoutPrograms: WorkoutProgram[];
+  /** Reward points ledger — tallied by monthKey, new month starts at 0 */
+  pointsLedger: PointsEntry[];
   activeMemberId: string | null;
   familyName: string;
 }

@@ -6,6 +6,13 @@ import { Avatar } from "@/components/ui/Avatar";
 import type { Chore } from "@/lib/types";
 import { choreAssigneeIds } from "@/lib/types";
 import { toDateKey } from "@/lib/date-utils";
+import {
+  entriesForMonth,
+  monthKeyFromDate,
+  monthLabel,
+  monthlyFamilyTotal,
+  monthlyPointsByMember,
+} from "@/lib/points";
 
 interface ChoresViewProps {
   onAddChore: () => void;
@@ -21,11 +28,15 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
     getMember,
     toggleChore,
     activeMemberId,
+    pointsLedger,
+    rewardsMonthKey,
   } = useFamilyStore();
   const [filter, setFilter] = useState<Filter>("today");
   const [memberFilter, setMemberFilter] = useState<string | "all">("all");
 
   const todayKey = toDateKey(new Date());
+  const monthKey = rewardsMonthKey || monthKeyFromDate();
+  const monthName = monthLabel(monthKey);
 
   const filtered = useMemo(() => {
     return chores
@@ -53,21 +64,34 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
       });
   }, [chores, filter, memberFilter, todayKey]);
 
-  const pointsByMember = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const c of chores) {
-      if (!c.completed) continue;
-      const ids = c.completedById
-        ? [c.completedById]
-        : choreAssigneeIds(c);
-      // Split points across assignees if multi
-      const share = c.points / Math.max(1, ids.length);
-      for (const id of ids) {
-        map.set(id, (map.get(id) ?? 0) + share);
-      }
-    }
-    return map;
-  }, [chores]);
+  /** Monthly rewards score (resets each 1st via new monthKey) */
+  const pointsByMember = useMemo(
+    () => monthlyPointsByMember(pointsLedger ?? [], monthKey),
+    [pointsLedger, monthKey]
+  );
+
+  const familyTotal = useMemo(
+    () => monthlyFamilyTotal(pointsLedger ?? [], monthKey),
+    [pointsLedger, monthKey]
+  );
+
+  const monthEntries = useMemo(
+    () =>
+      entriesForMonth(pointsLedger ?? [], monthKey).sort(
+        (a, b) =>
+          new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime()
+      ),
+    [pointsLedger, monthKey]
+  );
+
+  const ranked = useMemo(() => {
+    return [...members]
+      .map((m) => ({
+        member: m,
+        pts: pointsByMember.get(m.id) ?? 0,
+      }))
+      .sort((a, b) => b.pts - a.pts);
+  }, [members, pointsByMember]);
 
   const pendingCount = chores.filter((c) => !c.completed).length;
   const doneCount = chores.filter((c) => c.completed).length;
@@ -92,37 +116,105 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
         </button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {members.map((m) => {
-          const pts = Math.round(pointsByMember.get(m.id) ?? 0);
-          const open = chores.filter(
-            (c) => choreAssigneeIds(c).includes(m.id) && !c.completed
-          ).length;
-          return (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() =>
-                setMemberFilter((prev) => (prev === m.id ? "all" : m.id))
-              }
-              className={`card flex items-center gap-3 text-left transition ${
-                memberFilter === m.id
-                  ? "ring-2 ring-emerald-400"
-                  : "hover:border-emerald-200"
-              }`}
-            >
-              <Avatar member={m} size="lg" />
-              <div>
-                <p className="font-semibold text-slate-900">{m.name}</p>
-                <p className="text-sm text-slate-600">
-                  <span className="font-semibold text-amber-600">{pts}</span>{" "}
-                  pts · {open} open
-                </p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      {/* Monthly rewards board */}
+      <section className="overflow-hidden rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-amber-100 px-5 py-4">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-wider text-amber-800">
+              Monthly rewards
+            </p>
+            <h3 className="text-xl font-bold text-slate-900">{monthName}</h3>
+            <p className="mt-1 text-sm font-medium text-slate-600">
+              Points reset on the 1st of each month · complete chores to earn
+            </p>
+          </div>
+          <div className="rounded-2xl bg-amber-500 px-5 py-3 text-center text-white shadow-md shadow-amber-500/30">
+            <p className="text-[10px] font-extrabold uppercase tracking-wide text-amber-100">
+              Family total
+            </p>
+            <p className="text-3xl font-black tabular-nums">{familyTotal}</p>
+            <p className="text-xs font-semibold text-amber-100">pts this month</p>
+          </div>
+        </div>
+
+        {members.length === 0 ? (
+          <p className="px-5 py-8 text-center text-sm font-medium text-slate-600">
+            Add family members to start earning reward points.
+          </p>
+        ) : (
+          <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+            {ranked.map(({ member: m, pts }, index) => {
+              const open = chores.filter(
+                (c) => choreAssigneeIds(c).includes(m.id) && !c.completed
+              ).length;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() =>
+                    setMemberFilter((prev) => (prev === m.id ? "all" : m.id))
+                  }
+                  className={`flex items-center gap-3 rounded-2xl border bg-white px-4 py-3 text-left transition ${
+                    memberFilter === m.id
+                      ? "border-emerald-400 ring-2 ring-emerald-300"
+                      : "border-slate-200 hover:border-amber-300"
+                  }`}
+                >
+                  <div className="relative">
+                    <Avatar member={m} size="lg" />
+                    {index === 0 && pts > 0 && (
+                      <span className="absolute -right-1 -top-1 text-base">
+                        🏆
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-900">{m.name}</p>
+                    <p className="text-sm font-semibold text-amber-700">
+                      <span className="text-xl font-black tabular-nums">
+                        {pts}
+                      </span>{" "}
+                      pts
+                    </p>
+                    <p className="text-xs font-medium text-slate-500">
+                      {open} open chores
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {monthEntries.length > 0 && (
+          <div className="border-t border-amber-100 px-5 py-3">
+            <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-500">
+              Recent earns
+            </p>
+            <ul className="max-h-36 space-y-1.5 overflow-y-auto">
+              {monthEntries.slice(0, 12).map((e) => {
+                const m = getMember(e.memberId);
+                return (
+                  <li
+                    key={e.id}
+                    className="flex items-center justify-between gap-2 text-sm"
+                  >
+                    <span className="min-w-0 truncate font-medium text-slate-800">
+                      <span className="font-bold text-slate-900">
+                        {m?.name ?? "Someone"}
+                      </span>{" "}
+                      · {e.choreTitle}
+                    </span>
+                    <span className="shrink-0 font-extrabold text-amber-700">
+                      +{e.points}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+      </section>
 
       <div className="flex flex-wrap gap-2">
         {(
