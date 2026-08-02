@@ -26,7 +26,7 @@ import { uid } from "@/lib/date-utils";
 import { ICS_FUTURE_DAYS, ICS_PAST_DAYS, parseIcs } from "@/lib/ics";
 import { deepClone } from "@/lib/clone";
 import { applyRecurringChoreResets } from "@/lib/chore-reset";
-import { monthKeyFromDate } from "@/lib/points";
+import { monthKeyFromDate, resolvePointsRecipients } from "@/lib/points";
 
 interface FamilyStoreValue extends AppState {
   hydrated: boolean;
@@ -237,7 +237,7 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
           if (!chore) return s;
 
           if (chore.completed) {
-            // Un-complete: reverse points awarded for this completion
+            // Un-complete: reverse all points from this completion batch
             const ledger = (s.pointsLedger ?? []).filter(
               (e) =>
                 !(
@@ -264,24 +264,39 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
 
           const now = new Date();
           const earnedAt = now.toISOString();
-          const who =
-            completedById ??
-            s.activeMemberId ??
-            choreAssigneeIds(chore)[0];
-          const pts = Math.max(0, chore.points || 0);
+          const monthKey = monthKeyFromDate(now);
+          const validMemberIds = new Set(s.members.map((m) => m.id));
+
+          // Credit the person who did the work (assignee), not always the
+          // header "active" user — see resolvePointsRecipients.
+          const recipients = resolvePointsRecipients(chore, {
+            completedById,
+            activeMemberId: s.activeMemberId,
+            validMemberIds,
+          });
+
           const ledger = [...(s.pointsLedger ?? [])];
-          if (who && pts > 0) {
-            const entry: PointsEntry = {
+          for (const r of recipients) {
+            if (!r.memberId || r.points <= 0) continue;
+            if (!validMemberIds.has(r.memberId)) continue;
+            ledger.push({
               id: uid("pts"),
-              memberId: who,
+              memberId: r.memberId,
               choreId: chore.id,
               choreTitle: chore.title,
-              points: pts,
+              points: r.points,
               earnedAt,
-              monthKey: monthKeyFromDate(now),
-            };
-            ledger.push(entry);
+              monthKey,
+            });
           }
+
+          // completedById = who clicked / claimed (prefer active if assignee)
+          const assignees = choreAssigneeIds(chore);
+          const clicker =
+            completedById ||
+            s.activeMemberId ||
+            recipients[0]?.memberId ||
+            assignees[0];
 
           return {
             ...s,
@@ -292,7 +307,7 @@ export function FamilyStoreProvider({ children }: { children: ReactNode }) {
                     ...c,
                     completed: true,
                     completedAt: earnedAt,
-                    completedById: who,
+                    completedById: clicker,
                   }
                 : c
             ),

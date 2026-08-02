@@ -125,7 +125,8 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
             </p>
             <h3 className="text-xl font-bold text-slate-900">{monthName}</h3>
             <p className="mt-1 text-sm font-medium text-slate-600">
-              Points reset on the 1st of each month · complete chores to earn
+              Points go to the assignee who did the job · reset on the 1st of
+              each month
             </p>
           </div>
           <div className="rounded-2xl bg-amber-500 px-5 py-3 text-center text-white shadow-md shadow-amber-500/30">
@@ -201,9 +202,10 @@ export function ChoresView({ onAddChore, onEditChore }: ChoresViewProps) {
                   >
                     <span className="min-w-0 truncate font-medium text-slate-800">
                       <span className="font-bold text-slate-900">
-                        {m?.name ?? "Someone"}
-                      </span>{" "}
-                      · {e.choreTitle}
+                        {m?.name ?? "Unknown member"}
+                      </span>
+                      {" earned for "}
+                      {e.choreTitle}
                     </span>
                     <span className="shrink-0 font-extrabold text-amber-700">
                       +{e.points}
